@@ -3,26 +3,26 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: cl.exe compilar proyecto",
-            "command": "cl.exe",
+            "label": "C/C++: g++.exe compilar proyecto",
+            "command": "g++",
             "args": [
-                "/Zi",
-                "/EHsc",
-                "/nologo",
-                "/Fe${workspaceFolder}\\AnalizadorLexicoCPP.exe",
-                "${workspaceFolder}\\AnalizadorLexicoCPP\\AnalizadorLexicoCPP\\*.cpp"
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}\\AnalizadorLexicoCPP\\AnalizadorLexicoCPP\\*.cpp",
+                "-o",
+                "${workspaceFolder}\\AnalizadorLexicoCPP.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
-                "$msCompile"
+                "$gcc"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Compila todos los archivos .cpp usando el compilador de Visual Studio (cl.exe)."
+            "detail": "Compila todos los archivos .cpp usando el compilador de GCC (g++.exe)."
         }
     ]
 }
