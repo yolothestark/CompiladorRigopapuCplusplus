@@ -9,7 +9,7 @@ Este proyecto es un Analizador Léxico desarrollado en C++ como parte de la mate
  3. Torres Martinez Miguel Angel
  4. Molina Alvarado Alvaro Moises
 
-*(Nota: Integrantes listados en orden alfabético por su primer apellido)*
+
 
 ## Características Principales
 
