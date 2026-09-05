@@ -4,7 +4,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe compilar proyecto",
-            "command": "g++",
+            "command": "C:\\Users\\Yahir\\scoop\\apps\\gcc\\current\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
