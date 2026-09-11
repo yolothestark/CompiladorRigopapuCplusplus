@@ -4,11 +4,11 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe compilar proyecto",
-            "command": "C:\\Users\\Yahir\\scoop\\apps\\gcc\\current\\bin\\g++.exe",
+            "command": "g++",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${workspaceFolder}\\AnalizadorLexicoCPP\\AnalizadorLexicoCPP\\*.cpp",
+                "${workspaceFolder}\\*.cpp",
                 "-o",
                 "${workspaceFolder}\\AnalizadorLexicoCPP.exe"
             ],
