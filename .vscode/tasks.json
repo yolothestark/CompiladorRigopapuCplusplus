@@ -2,56 +2,11 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "compilar",
             "type": "shell",
-            "label": "C/C++: compilar proyecto (Multiplataforma)",
-            "command": "/usr/bin/g++",
-            "args": [
-                "-std=c++17",
-                "-fdiagnostics-color=always",
-                "-g",
-                "${workspaceFolder}/AnalizadorLexicoCPP/AnalizadorLexicoCPP/*.cpp",
-                "-o",
-                "${workspaceFolder}/AnalizadorLexicoCPP.out"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "windows": {
-                "command": "g++",
-                "args": [
-                    "-std=c++17",
-                    "-fdiagnostics-color=always",
-                    "-g",
-                    "${workspaceFolder}\\AnalizadorLexicoCPP\\AnalizadorLexicoCPP\\*.cpp",
-                    "-o",
-                    "${workspaceFolder}\\AnalizadorLexicoCPP.exe"
-                ]
-            },
-            "linux": {
-                "command": "/usr/bin/g++",
-                "args": [
-                    "-std=c++17",
-                    "-fdiagnostics-color=always",
-                    "-g",
-                    "${workspaceFolder}/AnalizadorLexicoCPP/AnalizadorLexicoCPP/*.cpp",
-                    "-o",
-                    "${workspaceFolder}/AnalizadorLexicoCPP.out"
-                ]
-            },
-            "detail": "Compila automáticamente tanto en Linux como en Windows."
-        },
-        {
-            "type": "cppbuild",
-            "label": "C/C++: g++.exe compilar proyecto",
             "command": "g++",
             "args": [
+                "-std=c++17",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${workspaceFolder}\\*.cpp",
@@ -66,9 +21,8 @@
             ],
             "group": {
                 "kind": "build",
-                "isDefault": false
-            },
-            "detail": "Compila usando la ruta original de Scoop en Windows."
+                "isDefault": true
+            }
         }
     ]
 }
