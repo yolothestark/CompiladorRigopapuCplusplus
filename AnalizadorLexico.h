@@ -3,18 +3,15 @@
 // 2. Figueroa Robles Axel Israel
 // 3. Torres Martinez Miguel Angel
 // 4. Molina Alvarado Alvaro Moises
-// 5. Angelica Cervantez Genesis
 
 #pragma once
 
 #include <string>
 #include <vector>
 
-using namespace std;
-
 struct Token {
-    string tipo;
-    string valor;
+    std::string tipo;
+    std::string valor;
     int linea;
     int columna;
 };
@@ -22,18 +19,18 @@ struct Token {
 struct ErrorLexico {
     int linea;
     int columna;
-    string tipo;
-    string mensaje;
-    string valor;
+    std::string tipo;
+    std::string mensaje;
+    std::string valor;
 };
 
 class AnalizadorLexico {
 private:
-    vector<Token> tokens;
-    vector<ErrorLexico> errores;
+    std::vector<Token> tokens;
+    std::vector<ErrorLexico> errores;
 
 public:
-    vector<Token> analizar(const string& codigo);
-    const vector<ErrorLexico>& obtenerErrores() const;
+    std::vector<Token> analizar(const std::string& codigo);
+    const std::vector<ErrorLexico>& obtenerErrores() const;
     bool tieneErrores() const;
 };

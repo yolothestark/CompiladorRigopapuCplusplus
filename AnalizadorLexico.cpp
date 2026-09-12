@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <cctype>
 
+using namespace std;
+
 const vector<ErrorLexico>& AnalizadorLexico::obtenerErrores() const {
     return errores;
 }
@@ -34,24 +36,19 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
         "while"
     };
 
-    // Regex originales
     regex identificador("[a-zA-Z_][a-zA-Z0-9_]*");
     regex decimal("[0-9]+\\.[0-9]+");
     regex entero("[0-9]+");
     regex cadena("\"([^\"\\\\]|\\\\.)*\"");
     regex caracter("'([^'\\\\]|\\\\.)'");
 
-    // Regex para errores léxicos específicos
-    // Identificador mal formado: empieza con un número y tiene letras (ej. 123invalido)
     regex err_identificador("[0-9]+[a-zA-Z_][a-zA-Z0-9_]*");
-    // Número con múltiples puntos (ej. 12.34.56)
     regex err_decimal_multiple("[0-9]+\\.[0-9]+(\\.[0-9]+)+");
     
     size_t posicion = 0;
     int linea_actual = 1;
     int columna_actual = 1;
 
-    // Función lambda para avanzar la posición y actualizar línea y columna
     auto avanzar = [&](size_t cantidad, const string& texto_consumido) {
         for (size_t i = 0; i < cantidad; i++) {
             if (texto_consumido[i] == '\n') {
@@ -66,63 +63,59 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
 
     while (posicion < codigo.length())
     {
-        if (isspace(codigo[posicion]))
+        if (isspace(static_cast<unsigned char>(codigo[posicion])))
         {
             string espacio = string(1, codigo[posicion]);
             avanzar(1, espacio);
             continue;
         }
 
-        if (posicion + 1 < codigo.length() &&
-            codigo[posicion] == '/' &&
-            codigo[posicion + 1] == '/')
+        if (posicion + 1 < codigo.length() && codigo[posicion] == '/' && codigo[posicion + 1] == '/')
         {
-            int start = posicion;
+            size_t start = posicion;
             while (posicion < codigo.length() && codigo[posicion] != '\n') {
                 posicion++;
             }
             string consumido = codigo.substr(start, posicion - start);
-            
-            // Revertir y usar avanzar
             posicion = start;
             avanzar(consumido.length(), consumido);
             continue;
         }
 
-        if (posicion + 1 < codigo.length() &&
-            codigo[posicion] == '/' &&
-            codigo[posicion + 1] == '*')
+        if (posicion + 1 < codigo.length() && codigo[posicion] == '/' && codigo[posicion + 1] == '*')
         {
-            int start = posicion;
+            size_t start = posicion;
+            int start_linea = linea_actual;
+            int start_columna = columna_actual;
             posicion += 2;
-            while (posicion + 1 < codigo.length() &&
-                !(codigo[posicion] == '*' && codigo[posicion + 1] == '/'))
-            {
+
+            while (posicion + 1 < codigo.length() && !(codigo[posicion] == '*' && codigo[posicion + 1] == '/')) {
                 posicion++;
             }
 
-            if (posicion + 1 < codigo.length())
-            {
+            if (posicion + 1 < codigo.length()) {
                 posicion += 2;
+                string consumido = codigo.substr(start, posicion - start);
+                posicion = start;
+                avanzar(consumido.length(), consumido);
+            } else {
+                string consumido = codigo.substr(start);
+                errores.push_back({start_linea, start_columna, "Error Lexico", "Comentario multilineal no cerrado", consumido});
+                posicion = start;
+                avanzar(consumido.length(), consumido);
             }
-            
-            string consumido = codigo.substr(start, posicion - start);
-            posicion = start;
-            avanzar(consumido.length(), consumido);
             continue;
         }
 
-        smatch coincidencia;
-        string restante = codigo.substr(posicion);
-
-        // Detección de cadena mal formada (manual para atrapar falta de cierre antes de salto de línea)
         if (codigo[posicion] == '"') {
             size_t len = 1;
             bool cerrado = false;
             while (posicion + len < codigo.length() && codigo[posicion + len] != '\n') {
                 if (codigo[posicion + len] == '\\') {
-                    len += 2; // saltar caracter escapado
-                    continue;
+                    if (posicion + len + 1 < codigo.length()) {
+                        len += 2;
+                        continue;
+                    }
                 }
                 if (codigo[posicion + len] == '"') {
                     len++;
@@ -134,28 +127,29 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
 
             if (!cerrado) {
                 string valor_err = codigo.substr(posicion, len);
-                errores.push_back({linea_actual, columna_actual, "Error Léxico", "Cadena mal formada (falta cierre de comillas)", valor_err});
+                errores.push_back({linea_actual, columna_actual, "Error Lexico", "Cadena mal formada (falta cierre de comillas)", valor_err});
                 avanzar(len, valor_err);
                 continue;
             }
         }
 
-        // Primero verificar errores con expresiones regulares
+        smatch coincidencia;
+        string restante = codigo.substr(posicion);
+
         if (regex_search(restante, coincidencia, err_decimal_multiple, regex_constants::match_continuous))
         {
-            errores.push_back({linea_actual, columna_actual, "Error Léxico", "Literal numérico incorrecto (múltiples puntos decimales)", coincidencia.str()});
+            errores.push_back({linea_actual, columna_actual, "Error Lexico", "Literal numerico incorrecto (multiples puntos decimales)", coincidencia.str()});
             avanzar(coincidencia.length(), coincidencia.str());
             continue;
         }
 
         if (regex_search(restante, coincidencia, err_identificador, regex_constants::match_continuous))
         {
-            errores.push_back({linea_actual, columna_actual, "Error Léxico", "Identificador mal formado o literal numérico incorrecto", coincidencia.str()});
+            errores.push_back({linea_actual, columna_actual, "Error Lexico", "Identificador mal formado (inicia con numeros)", coincidencia.str()});
             avanzar(coincidencia.length(), coincidencia.str());
             continue;
         }
 
-        // Si no es error, procesar tokens válidos
         if (regex_search(restante, coincidencia, cadena, regex_constants::match_continuous))
         {
             resultado.push_back({"CADENA", coincidencia.str(), linea_actual, columna_actual});
@@ -199,7 +193,6 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             continue;
         }
 
-        // Operadores de más de un caracter
         if (posicion + 1 < codigo.length())
         {
             string operador = codigo.substr(posicion, 2);
@@ -224,7 +217,6 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             }
         }
 
-        // Símbolos de 1 caracter
         char simbolo = codigo[posicion];
         string str_simbolo = string(1, simbolo);
         bool procesado = true;
@@ -249,8 +241,7 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             continue;
         }
 
-        // Si llega aquí, es un caracter no reconocido
-        errores.push_back({linea_actual, columna_actual, "Error Léxico", "Caracter no reconocido", str_simbolo});
+        errores.push_back({linea_actual, columna_actual, "Error Lexico", "Caracter no reconocido", str_simbolo});
         avanzar(1, str_simbolo);
     }
 
