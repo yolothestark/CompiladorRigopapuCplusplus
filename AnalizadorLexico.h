@@ -3,7 +3,6 @@
 // 2. Figueroa Robles Axel Israel
 // 3. Torres Martinez Miguel Angel
 // 4. Molina Alvarado Alvaro Moises
-// 5. Angelica Cervantez Genesis
 
 #pragma once
 
