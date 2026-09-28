@@ -28,17 +28,30 @@ int main()
     // Requisito: Nombre de integrantes al inicio del main
     imprimirEncabezadoIntegrantes();
 
-    // Casos de prueba requeridos por la Actividad 5
+    // Casos de prueba requeridos por la practica (Clases y Metodos)
     string codigoPrueba = R"(
         // --- CASOS VALIDOS ---
-        if (x > 0) { x = x + 1; } else { x = x - 1; }
-        while (y < 10) { y = y + 1; }
-        for (i = 0; i < 10; i = i + 1) { suma = suma + i; }
+        class MiClase { 
+            int miMetodo(int a, float b) { 
+                // cuerpo del metodo 
+                x = x + 1;
+            } 
+            void otroMetodo() { 
+                // cuerpo del metodo 
+                y = 0;
+            }
+        }
 
         // --- CASOS INVALIDOS (SINTAXIS ERRONEA) ---
-        if (x > 0 { x = x + 1; }
-        while x < 10) { y = y + 1; }
-        for i = 0; i < 10; i = i + 1) { suma = suma + i; }
+        class MiClaseInvalida { 
+            int miMetodo(int a float b) { // Falta coma entre parametros 
+                x = x + 1;
+            } 
+            void otroMetodo { // Faltan parentesis 
+                y = 0;
+            }
+        // Faltaria la llave de cierre de la clase, pero la dejamos para forzar otro error, o la ponemos:
+        }
     )";
 
     // 1. Fase de Análisis Léxico
@@ -77,22 +90,14 @@ int main()
         cout << "Se encontraron " << errores.size() << " error(es) sintactico(s):\n" << endl;
         
         for (const auto& err : errores) {
-            cout << ">> " << err.tipo << " en [Linea: " << err.linea << ", Columna: " << err.columna << "]" << endl;
-            cout << "   - Detalle: " << err.mensaje << endl;
-            cout << "----------------------------------------------------------" << endl;
+            cout << "Error: " << err.mensaje << " en la linea " << err.linea << ", columna " << err.columna << "." << endl;
         }
     } else {
         cout << "¡Analisis sintactico exitoso! No se encontraron errores." << endl;
     }
 
     // Requisito: Nombre de integrantes al final del main
-    cout << "\n==========================================================" << endl;
-    cout << "Fin de ejecucion - Integrantes del equipo:" << endl;
-    cout << "1. Anguiano Garcia Angel Yahir Guadalupe" << endl;
-    cout << "2. Figueroa Robles Axel Israel" << endl;
-    cout << "3. Torres Martinez Miguel Angel" << endl;
-    cout << "4. Molina Alvarado Alvaro Moises" << endl;
-    cout << "==========================================================" << endl;
+    imprimirEncabezadoIntegrantes();
 
     return 0;
 }

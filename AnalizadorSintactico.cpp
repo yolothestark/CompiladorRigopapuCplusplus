@@ -73,6 +73,9 @@ void AnalizadorSintactico::sincronizar() {
             comprobar("PALABRA_CLAVE", "int") ||
             comprobar("PALABRA_CLAVE", "float") ||
             comprobar("PALABRA_CLAVE", "char") ||
+            comprobar("PALABRA_CLAVE", "void") ||
+            comprobar("PALABRA_CLAVE", "boolean") ||
+            comprobar("PALABRA_CLAVE", "class") ||
             comprobar("PALABRA_CLAVE", "return")) {
             return;
         }
@@ -90,7 +93,105 @@ void AnalizadorSintactico::analizar(const vector<Token>& tokensEntrada) {
 
 void AnalizadorSintactico::programa() {
     while (!estaAlFinal()) {
-        sentencia();
+        if (comprobar("PALABRA_CLAVE", "class")) {
+            declaracionClase();
+        } else {
+            sentencia();
+        }
+    }
+}
+
+bool AnalizadorSintactico::esTipoDato() const {
+    return comprobar("PALABRA_CLAVE", "int") || 
+           comprobar("PALABRA_CLAVE", "float") || 
+           comprobar("PALABRA_CLAVE", "void") || 
+           comprobar("PALABRA_CLAVE", "char") || 
+           comprobar("PALABRA_CLAVE", "boolean");
+}
+
+void AnalizadorSintactico::declaracionClase() {
+    coincidir("PALABRA_CLAVE", "class");
+    
+    if (!coincidir("IDENTIFICADOR")) {
+        reportarError("Se esperaba un identificador para el nombre de la clase");
+    }
+    
+    if (!coincidir("SIMBOLO", "{")) {
+        reportarError("Cuerpo de clase invalido en la declaracion de 'class' (Falta '{')");
+    }
+    
+    cuerpoClase();
+    
+    if (!coincidir("SIMBOLO", "}")) {
+        reportarError("Cuerpo de clase invalido en la declaracion de 'class' (Falta '}')");
+    }
+}
+
+void AnalizadorSintactico::cuerpoClase() {
+    while (!estaAlFinal() && !comprobar("SIMBOLO", "}")) {
+        if (esTipoDato()) {
+            declaracionMetodoOVariable();
+        } else {
+            reportarError("Se esperaba una declaracion de metodo o variable dentro de la clase");
+            sincronizar(); // Saltar al siguiente punto seguro
+        }
+    }
+}
+
+void AnalizadorSintactico::declaracionMetodoOVariable() {
+    avanzar(); // Consumir el tipo
+    
+    if (!coincidir("IDENTIFICADOR")) {
+        reportarError("Se esperaba un identificador despues del tipo");
+        return;
+    }
+    
+    if (comprobar("SIMBOLO", "(")) {
+        // Es un metodo
+        avanzar(); // Consumir '('
+        parametros();
+        
+        if (!coincidir("SIMBOLO", ")")) {
+            reportarError("Faltan parentesis en la declaracion del metodo");
+        }
+        
+        if (!comprobar("SIMBOLO", "{")) {
+            reportarError("Cuerpo de metodo invalido en la declaracion de metodo (Falta '{')");
+            sincronizar();
+            return;
+        }
+        bloque(); // cuerpo_metodo
+    } else {
+        // Es una variable
+        if (coincidir("OPERADOR_ASIGNACION", "=")) {
+            expresion();
+        }
+        if (!coincidir("SIMBOLO", ";")) {
+            reportarError("Se esperaba ';' al final de la declaracion de variable");
+        }
+    }
+}
+
+void AnalizadorSintactico::parametros() {
+    if (!comprobar("SIMBOLO", ")")) { 
+        parametro();
+        while (coincidir("SIMBOLO", ",")) {
+            parametro();
+        }
+    }
+}
+
+void AnalizadorSintactico::parametro() {
+    if (esTipoDato()) {
+        avanzar(); // Consumir tipo
+        if (!coincidir("IDENTIFICADOR")) {
+            reportarError("Parametro invalido (Falta identificador)");
+        }
+    } else {
+        reportarError("Parametro invalido (Se esperaba un tipo de dato)");
+        if (!estaAlFinal() && !comprobar("SIMBOLO", ")") && !comprobar("SIMBOLO", ",")) {
+            avanzar(); // Consumir token erroneo
+        }
     }
 }
 

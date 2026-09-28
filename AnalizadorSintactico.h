@@ -52,6 +52,14 @@ private:
     void inicializacion();
     void actualizacion();
 
+    // Nuevas reglas para clases y metodos
+    void declaracionClase();
+    void cuerpoClase();
+    void declaracionMetodoOVariable();
+    void parametros();
+    void parametro();
+    bool esTipoDato() const;
+
 public:
     void analizar(const vector<Token>& tokensEntrada);
     const vector<ErrorSintactico>& obtenerErrores() const;
