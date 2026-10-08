@@ -1,10 +1,16 @@
-// Nombres de integrantes:
-// 1. Anguiano Garcia Angel Yahir Guadalupe
-// 2. Figueroa Robles Axel Israel
-// 3. Torres Martinez Miguel Angel
-// 4. Molina Alvarado Alvaro Moises
-
+// Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel
 #include "AnalizadorSintactico.h"
+#include "TablaSimbolos.hpp" // NUEVO: Incluir la tabla de simbolos
+
+TablaSimbolos tabla; // NUEVO: Instancia global de la tabla de simbolos
+
+// NUEVO: Funcion auxiliar para convertir el string del token al Enum
+TipoDato obtenerTipoDato(const string& tipoStr) {
+    if (tipoStr == "int") return TipoDato::INT;
+    if (tipoStr == "float") return TipoDato::FLOAT;
+    if (tipoStr == "void") return TipoDato::VOID;
+    return TipoDato::DESCONOCIDO;
+}
 
 const vector<ErrorSintactico>& AnalizadorSintactico::obtenerErrores() const {
     return errores;
@@ -133,18 +139,23 @@ void AnalizadorSintactico::cuerpoClase() {
             declaracionMetodoOVariable();
         } else {
             reportarError("Se esperaba una declaracion de metodo o variable dentro de la clase");
-            sincronizar(); // Saltar al siguiente punto seguro
+            sincronizar(); 
         }
     }
 }
 
 void AnalizadorSintactico::declaracionMetodoOVariable() {
+    Token tokenTipo = tokenActual(); // NUEVO: Guardamos el tipo de dato
     avanzar(); // Consumir el tipo
     
+    Token tokenVar = tokenActual(); // NUEVO: Guardamos el nombre
     if (!coincidir("IDENTIFICADOR")) {
         reportarError("Se esperaba un identificador despues del tipo");
         return;
     }
+
+    // NUEVO: Insercion en Tabla de Simbolos (Variables globales o metodos)
+    tabla.insertarSimbolo(tokenVar.valor, obtenerTipoDato(tokenTipo.valor), tokenVar.linea, tokenVar.columna);
     
     if (comprobar("SIMBOLO", "(")) {
         // Es un metodo
@@ -183,9 +194,15 @@ void AnalizadorSintactico::parametros() {
 
 void AnalizadorSintactico::parametro() {
     if (esTipoDato()) {
+        Token tokenTipo = tokenActual(); // NUEVO
         avanzar(); // Consumir tipo
+        
+        Token tokenVar = tokenActual(); // NUEVO
         if (!coincidir("IDENTIFICADOR")) {
             reportarError("Parametro invalido (Falta identificador)");
+        } else {
+            // NUEVO: Registrar el parámetro en la tabla de símbolos
+            tabla.insertarSimbolo(tokenVar.valor, obtenerTipoDato(tokenTipo.valor), tokenVar.linea, tokenVar.columna);
         }
     } else {
         reportarError("Parametro invalido (Se esperaba un tipo de dato)");
@@ -205,7 +222,6 @@ void AnalizadorSintactico::sentencia() {
         bloque();
     } 
     else {
-        // Sentencia simple o expresión finalizada en ';'
         expresion();
         if (!coincidir("SIMBOLO", ";")) {
             reportarError("Se esperaba ';' al final de la sentencia.");
@@ -224,7 +240,6 @@ void AnalizadorSintactico::estructuraControl() {
     }
 }
 
-// sentencia_if -> 'if' '(' expresion ')' bloque ( 'else' bloque )?
 void AnalizadorSintactico::sentenciaIf() {
     coincidir("PALABRA_CLAVE", "if");
 
@@ -255,7 +270,6 @@ void AnalizadorSintactico::sentenciaIf() {
     }
 }
 
-// sentencia_while -> 'while' '(' expresion ')' bloque
 void AnalizadorSintactico::sentenciaWhile() {
     coincidir("PALABRA_CLAVE", "while");
 
@@ -277,7 +291,6 @@ void AnalizadorSintactico::sentenciaWhile() {
     bloque();
 }
 
-// sentencia_for -> 'for' '(' inicializacion ';' expresion ';' actualizacion ')' bloque
 void AnalizadorSintactico::sentenciaFor() {
     coincidir("PALABRA_CLAVE", "for");
 
@@ -285,7 +298,6 @@ void AnalizadorSintactico::sentenciaFor() {
         reportarError("Se esperaba '(' despues del 'for'.");
     }
 
-    // Inicialización
     if (!comprobar("SIMBOLO", ";")) {
         inicializacion();
     }
@@ -293,7 +305,6 @@ void AnalizadorSintactico::sentenciaFor() {
         reportarError("Componente invalido o falta ';' tras la inicializacion en la estructura 'for'.");
     }
 
-    // Condición
     if (!comprobar("SIMBOLO", ";")) {
         expresion();
     }
@@ -301,7 +312,6 @@ void AnalizadorSintactico::sentenciaFor() {
         reportarError("Componente invalido o falta ';' tras la condicion en la estructura 'for'.");
     }
 
-    // Actualización
     if (!comprobar("SIMBOLO", ")")) {
         actualizacion();
     }
@@ -318,12 +328,13 @@ void AnalizadorSintactico::sentenciaFor() {
     bloque();
 }
 
-// bloque -> '{' ( sentencia )* '}'
 void AnalizadorSintactico::bloque() {
     if (!coincidir("SIMBOLO", "{")) {
         reportarError("Se esperaba '{' al inicio del bloque.");
         return;
     }
+
+    tabla.entrarAmbito(); // NUEVO: Gestión de Ámbito (Scope Local)
 
     while (!comprobar("SIMBOLO", "}") && !estaAlFinal()) {
         sentencia();
@@ -332,6 +343,8 @@ void AnalizadorSintactico::bloque() {
     if (!coincidir("SIMBOLO", "}")) {
         reportarError("Se esperaba '}' al cerrar el bloque.");
     }
+    
+    tabla.salirAmbito(); // NUEVO: Destruir el ámbito local
 }
 
 void AnalizadorSintactico::inicializacion() {
@@ -342,29 +355,61 @@ void AnalizadorSintactico::actualizacion() {
     expresion();
 }
 
-// Reconoce expresiones básicas (asignaciones, comparaciones, etc.)
 void AnalizadorSintactico::expresion() {
+    Token tokenIzq = tokenActual(); // NUEVO: Para saber a quién le asignamos
     expresionSimple();
 
     if (comprobar("OPERADOR_RELACIONAL") || comprobar("OPERADOR_ASIGNACION") || comprobar("OPERADOR_LOGICO")) {
+        Token tokenOp = tokenActual(); // NUEVO
         avanzar();
+        
+        Token tokenDer = tokenActual(); // NUEVO: Para saber qué valor tiene
         expresionSimple();
+        
+        // NUEVO: Verificacion de tipos de datos al detectar una asignación (=)
+        if (tokenOp.valor == "=" && tokenIzq.tipo == "IDENTIFICADOR") {
+            TipoDato tipoValor = TipoDato::DESCONOCIDO;
+            if (tokenDer.tipo == "ENTERO") tipoValor = TipoDato::INT;
+            else if (tokenDer.tipo == "DECIMAL") tipoValor = TipoDato::FLOAT;
+            
+            tabla.verificarAsignacion(tokenIzq.valor, tipoValor, tokenIzq.linea, tokenIzq.columna);
+        }
     }
 }
 
 void AnalizadorSintactico::expresionSimple() {
     if (comprobar("IDENTIFICADOR") || comprobar("ENTERO") || comprobar("DECIMAL") || comprobar("CADENA")) {
+        Token tokenActualInfo = tokenActual(); // NUEVO
         avanzar();
+        
+        // NUEVO: Si usamos una variable, verificamos que exista en la tabla
+        if (tokenActualInfo.tipo == "IDENTIFICADOR") {
+            tabla.buscarSimbolo(tokenActualInfo.valor, tokenActualInfo.linea, tokenActualInfo.columna);
+        }
+
         if (comprobar("OPERADOR_INCREMENTO") || comprobar("OPERADOR_ARITMETICO")) {
             avanzar();
             if (comprobar("IDENTIFICADOR") || comprobar("ENTERO") || comprobar("DECIMAL")) {
+                Token tokenDerInfo = tokenActual(); // NUEVO
                 avanzar();
+                
+                // NUEVO: Verificar si el segundo operando existe (si es variable)
+                if (tokenDerInfo.tipo == "IDENTIFICADOR") {
+                    tabla.buscarSimbolo(tokenDerInfo.valor, tokenDerInfo.linea, tokenDerInfo.columna);
+                }
             }
         }
     } else if (comprobar("PALABRA_CLAVE", "int") || comprobar("PALABRA_CLAVE", "float") || comprobar("PALABRA_CLAVE", "char")) {
+        Token tokenTipo = tokenActual(); // NUEVO: Guardar token de tipo
         avanzar(); // Tipo de dato en declaración
+        
         if (comprobar("IDENTIFICADOR")) {
+            Token tokenVar = tokenActual(); // NUEVO: Guardar token de variable
             avanzar();
+            
+            // NUEVO: Insertar variable local en la tabla
+            tabla.insertarSimbolo(tokenVar.valor, obtenerTipoDato(tokenTipo.valor), tokenVar.linea, tokenVar.columna);
+
             if (coincidir("OPERADOR_ASIGNACION", "=")) {
                 expresion();
             }
