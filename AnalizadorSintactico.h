@@ -1,14 +1,15 @@
 // Nombres de integrantes:
 // 1. Anguiano Garcia Angel Yahir Guadalupe
 // 2. Figueroa Robles Axel Israel
-// 3. Torres Martinez Miguel Angel
-// 4. Molina Alvarado Alvaro Moises
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 
 #pragma once
 
 #include <string>
 #include <vector>
 #include "AnalizadorLexico.h"
+#include "TablaSimbolos.hpp"
 
 using namespace std;
 
@@ -25,7 +26,6 @@ private:
     size_t indiceActual;
     vector<ErrorSintactico> errores;
 
-    // Métodos auxiliares de recorrido
     Token tokenActual() const;
     Token tokenAnterior() const;
     bool estaAlFinal() const;
@@ -34,10 +34,8 @@ private:
     bool coincidir(const string& tipo, const string& valor = "");
     void reportarError(const string& mensaje);
 
-    // Sincronización para recuperación tras un error sintáctico
     void sincronizar();
 
-    // Reglas gramaticales (Estructuras de Control)
     void programa();
     void sentencia();
     void estructuraControl();
@@ -45,14 +43,14 @@ private:
     void sentenciaWhile();
     void sentenciaFor();
     
-    // Reglas para componentes
     void bloque();
-    void expresion();
-    void expresionSimple();
+    
+    TipoDato expresion();
+    TipoDato expresionSimple();
+    
     void inicializacion();
     void actualizacion();
 
-    // Nuevas reglas para clases y metodos
     void declaracionClase();
     void cuerpoClase();
     void declaracionMetodoOVariable();

@@ -1,8 +1,8 @@
 // Nombres de integrantes:
 // 1. Anguiano Garcia Angel Yahir Guadalupe
 // 2. Figueroa Robles Axel Israel
-// 3. Torres Martinez Miguel Angel
-// 4. Molina Alvarado Alvaro Moises
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 
 #include <iostream>
 #include <string>
@@ -18,40 +18,50 @@ void imprimirEncabezadoIntegrantes() {
     cout << "Integrantes del equipo:" << endl;
     cout << "1. Anguiano Garcia Angel Yahir Guadalupe" << endl;
     cout << "2. Figueroa Robles Axel Israel" << endl;
-    cout << "3. Torres Martinez Miguel Angel" << endl;
-    cout << "4. Molina Alvarado Alvaro Moises" << endl;
+    cout << "3. Molina Alvarado Alvaro Moises" << endl;
+    cout << "4. Torres Martinez Miguel Angel" << endl;
+    cout << "==========================================================" << endl;
+    cout << "  PRACTICA: VALIDACION DE TIPOS EN EXPRESIONES (SEMANTICO)" << endl;
     cout << "==========================================================" << endl << endl;
 }
 
 int main() {
     imprimirEncabezadoIntegrantes();
 
-    // Casos de prueba requeridos por la practica (Clases y Metodos)
     string codigoPrueba = R"(
-        // --- CASOS VALIDOS ---
+        // ==========================================
+        // 1. CASOS VALIDOS (Tipos y Expresiones)
+        // ==========================================
+        int edad = 25;
+        float promedio = 8.5;
+        boolean activo = true;
+        string nombre = "Juan";
+
+        int suma = 5 + 3;
+        float calculo = (10.0 + 20.0) * (30.0 - 15.0);
+        boolean testLogico = (edad > 18) && activo;
+        float conversionImplicita = edad; // Valido: int a float
+
+        // ==========================================
+        // 2. CASOS INVALIDOS (Errores Semánticos)
+        // ==========================================
+        int errSuma = edad + nombre;          // Error: Sumar entero con cadena
+        int errDiv = 10 / 0;                  // Error: Division por cero
+        boolean errLogico = (edad > 18) && 1; // Error: Operador logico con un numero
+        boolean errComp = (nombre == 5);      // Error: Comparacion entre string y numero
+        int errTipo = "Hola";                 // Error: Asignacion de string a int
+
+        // ==========================================
+        // 3. SOPORTE A PRACTICAS ANTERIORES
+        // ==========================================
         class MiClase { 
             int miMetodo(int a, float b) { 
-                // cuerpo del metodo 
+                int x = 0;
                 x = x + 1;
             } 
-            void otroMetodo() { 
-                // cuerpo del metodo 
-                y = 0;
-            }
-        }
-
-        // --- CASOS INVALIDOS (SINTAXIS ERRONEA) ---
-        class MiClaseInvalida { 
-            int miMetodo(int a float b) { // Falta coma entre parametros 
-                x = x + 1;
-            } 
-            void otroMetodo { // Faltan parentesis 
-                y = 0;
-            }
         }
     )";
 
-    // 1. Fase de Análisis Léxico
     AnalizadorLexico lexico;
     vector<Token> tokens = lexico.analizar(codigoPrueba);
 
@@ -74,25 +84,25 @@ int main() {
         cout << "\n[+] Analisis lexico completado sin errores." << endl;
     }
 
-    // 2. Fase de Análisis Sintáctico
     AnalizadorSintactico sintactico;
     sintactico.analizar(tokens);
 
     cout << "\n==========================================================" << endl;
-    cout << "           REPORTE DE ERRORES SINTACTICOS                 " << endl;
+    cout << "      REPORTE DE ERRORES SINTACTICOS Y SEMANTICOS         " << endl;
     cout << "==========================================================" << endl;
 
     if (sintactico.tieneErrores()) {
         const auto& errores = sintactico.obtenerErrores();
-        cout << "Se encontraron " << errores.size() << " error(es) sintactico(s):\n" << endl;
+        cout << "Se encontraron " << errores.size() << " error(es):\n" << endl;
         
         for (const auto& err : errores) {
-            cout << "Error: " << err.mensaje << " en la linea " << err.linea << ", columna " << err.columna << "." << endl;
+            cout << ">> " << err.mensaje << " [Linea " << err.linea << ", Columna " << err.columna << "]" << endl;
         }
     } else {
-        cout << "¡Analisis sintactico exitoso! No se encontraron errores." << endl;
+        cout << "¡Analisis exitoso! No se encontraron errores." << endl;
     }
 
+    cout << "\n";
     imprimirEncabezadoIntegrantes();
 
     return 0;

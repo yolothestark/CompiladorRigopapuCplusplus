@@ -1,4 +1,9 @@
-// Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
+
 #ifndef TABLASIMBOLOS_HPP
 #define TABLASIMBOLOS_HPP
 
@@ -7,7 +12,18 @@
 #include <unordered_map>
 #include <vector>
 
-enum class TipoDato { INT, FLOAT, VOID, DESCONOCIDO };
+enum class TipoDato { INT, FLOAT, BOOLEAN, STRING, VOID, DESCONOCIDO };
+
+inline std::string tipoDatoToString(TipoDato tipo) {
+    switch (tipo) {
+        case TipoDato::INT: return "int";
+        case TipoDato::FLOAT: return "float";
+        case TipoDato::BOOLEAN: return "boolean";
+        case TipoDato::STRING: return "string";
+        case TipoDato::VOID: return "void";
+        default: return "desconocido";
+    }
+}
 
 struct Simbolo {
     std::string nombre;
@@ -65,13 +81,17 @@ public:
         Simbolo* sim = buscarSimbolo(nombreVariable, linea, columna);
         if (sim == nullptr) return false;
 
-        if (sim->tipo != tipoValor) {
-            std::cout << "Error Semántico: Tipo de dato incompatible en la asignación a '" 
-                      << nombreVariable << "' en la línea " << linea 
-                      << ", columna " << columna << ".\n";
-            return false;
+        if (sim->tipo == tipoValor) return true;
+
+        if (sim->tipo == TipoDato::FLOAT && tipoValor == TipoDato::INT) {
+            return true; 
         }
-        return true;
+
+        std::cout << "Error Semántico: Tipo de dato incompatible en la asignación a '" 
+                  << nombreVariable << "' (esperado: " << tipoDatoToString(sim->tipo) 
+                  << ", recibido: " << tipoDatoToString(tipoValor) << ") en la línea " 
+                  << linea << ", columna " << columna << ".\n";
+        return false;
     }
 };
 
