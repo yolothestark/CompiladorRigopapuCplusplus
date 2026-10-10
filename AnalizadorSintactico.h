@@ -6,46 +6,62 @@
 
 #pragma once
 
-#include "AnalizadorLexico.h"
 #include <string>
 #include <vector>
+#include "AnalizadorLexico.h"
+
+using namespace std;
 
 struct ErrorSintactico {
     int linea;
     int columna;
-    std::string mensaje;
-    std::string tokenEncontrado;
+    string tipo;
+    string mensaje;
 };
 
 class AnalizadorSintactico {
 private:
-    std::vector<Token> tokens;
-    size_t posicionActual;
-    std::vector<ErrorSintactico> errores;
+    vector<Token> tokens;
+    size_t indiceActual;
+    vector<ErrorSintactico> errores;
 
+    // Métodos auxiliares de recorrido
     Token tokenActual() const;
     Token tokenAnterior() const;
     bool estaAlFinal() const;
-    bool comprobar(const std::string& tipo) const;
-    bool comprobarValor(const std::string& valor) const;
     Token avanzar();
+    bool comprobar(const string& tipo, const string& valor = "") const;
+    bool coincidir(const string& tipo, const string& valor = "");
+    void reportarError(const string& mensaje);
 
-    void registrarError(const std::string& mensaje, const Token& tok);
+    // Sincronización para recuperación tras un error sintáctico
     void sincronizar();
 
-    // Reglas gramaticales para Expresiones Aritméticas y Lógicas
+    // Reglas gramaticales (Estructuras de Control)
     void programa();
-    void expresionStmt();
+    void sentencia();
+    void estructuraControl();
+    void sentenciaIf();
+    void sentenciaWhile();
+    void sentenciaFor();
+    
+    // Reglas para componentes
+    void bloque();
     void expresion();
-    void expresionLogica();
-    void expresionRelacional();
-    void expresionAritmetica();
-    void terminoAritmetico();
-    void factorAritmetico();
+    void expresionSimple();
+    void inicializacion();
+    void actualizacion();
+
+    // Nuevas reglas para clases y metodos
+    void declaracionClase();
+    void cuerpoClase();
+    void declaracionMetodoOVariable();
+    void parametros();
+    void parametro();
+    bool esTipoDato() const;
 
 public:
-    AnalizadorSintactico();
-    bool analizar(const std::vector<Token>& tokensEntrada);
-    const std::vector<ErrorSintactico>& obtenerErrores() const;
+    void analizar(const vector<Token>& tokensEntrada);
+    const vector<ErrorSintactico>& obtenerErrores() const;
     bool tieneErrores() const;
 };
