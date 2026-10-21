@@ -29,7 +29,7 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
         "const", "continue", "default", "delete", "do",
         "double", "else", "enum", "false", "float",
         "for", "if", "int", "long", "namespace", "new",
-        "nullptr", "private", "protected", "public", "return",
+        "nullptr", "private", "boolean", "string", "protected", "public", "return",
         "short", "signed", "sizeof", "static", "struct",
         "switch", "this", "throw", "true", "try",
         "typedef", "using", "virtual", "void", "volatile",

@@ -33,9 +33,19 @@ struct Simbolo {
     int columna;
 };
 
+struct SimboloFuncion {
+    std::string nombre;
+    TipoDato tipoRetorno;
+    std::vector<TipoDato> tiposParametros;
+    int linea;
+    int columna;
+};
+
 class TablaSimbolos {
 private:
     std::vector<std::unordered_map<std::string, Simbolo>> pilaAmbitos;
+
+    std::unordered_map<std::string, SimboloFuncion> tablaFunciones;
 
 public:
     TablaSimbolos() { 
@@ -47,7 +57,9 @@ public:
     }
 
     void salirAmbito() {
-        if (pilaAmbitos.size() > 1) pilaAmbitos.pop_back();
+        if (pilaAmbitos.size() > 1) {
+            pilaAmbitos.pop_back();
+        }
     }
 
     bool insertarSimbolo(const std::string& nombre, TipoDato tipo, int linea, int columna) {
@@ -92,6 +104,30 @@ public:
                   << ", recibido: " << tipoDatoToString(tipoValor) << ") en la línea " 
                   << linea << ", columna " << columna << ".\n";
         return false;
+    }
+
+    bool insertarFuncion(const std::string& nombre, TipoDato tipoRetorno, 
+                         const std::vector<TipoDato>& params, int linea, int columna) {
+        if (tablaFunciones.find(nombre) != tablaFunciones.end()) {
+            std::cout << "Error Semántico: El método '" << nombre 
+                      << "' ya fue declarado previamente (Línea " << linea 
+                      << ", Columna " << columna << ").\n";
+            return false;
+        }
+
+        tablaFunciones[nombre] = {nombre, tipoRetorno, params, linea, columna};
+        return true;
+    }
+
+    SimboloFuncion* buscarFuncion(const std::string& nombre, int linea, int columna) {
+        auto it = tablaFunciones.find(nombre);
+        if (it != tablaFunciones.end()) {
+            return &(it->second);
+        }
+        std::cout << "Error Semántico: El método '" << nombre 
+                  << "' no ha sido declarado (Línea " << linea 
+                  << ", Columna " << columna << ").\n";
+        return nullptr;
     }
 };
 
