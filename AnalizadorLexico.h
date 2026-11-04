@@ -1,14 +1,19 @@
 // Nombres de integrantes:
 // 1. Anguiano Garcia Angel Yahir Guadalupe
 // 2. Figueroa Robles Axel Israel
-// 3. Torres Martinez Miguel Angel
-// 4. Molina Alvarado Alvaro Moises
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 
 #pragma once
 
 #include <string>
 #include <vector>
 
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 struct Token {
     std::string tipo;
     std::string valor;
@@ -16,6 +21,11 @@ struct Token {
     int columna;
 };
 
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 struct ErrorLexico {
     int linea;
     int columna;
@@ -24,6 +34,11 @@ struct ErrorLexico {
     std::string valor;
 };
 
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 class AnalizadorLexico {
 private:
     std::vector<Token> tokens;

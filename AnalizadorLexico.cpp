@@ -1,8 +1,8 @@
 // Nombres de integrantes:
 // 1. Anguiano Garcia Angel Yahir Guadalupe
 // 2. Figueroa Robles Axel Israel
-// 3. Torres Martinez Miguel Angel
-// 4. Molina Alvarado Alvaro Moises
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 
 #include "AnalizadorLexico.h"
 #include <regex>
@@ -17,6 +17,14 @@ const vector<ErrorLexico>& AnalizadorLexico::obtenerErrores() const {
 
 bool AnalizadorLexico::tieneErrores() const {
     return !errores.empty();
+}
+
+static bool esInicioId(unsigned char c) {
+    return isalpha(c) || c == '_' || c >= 128;
+}
+
+static bool esCuerpoId(unsigned char c) {
+    return isalnum(c) || c == '_' || c >= 128;
 }
 
 vector<Token> AnalizadorLexico::analizar(const string& codigo)
@@ -36,13 +44,11 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
         "while"
     };
 
-    regex identificador("[a-zA-Z_][a-zA-Z0-9_]*");
     regex decimal("[0-9]+\\.[0-9]+");
     regex entero("[0-9]+");
     regex cadena("\"([^\"\\\\]|\\\\.)*\"");
     regex caracter("'([^'\\\\]|\\\\.)'");
 
-    regex err_identificador("[0-9]+[a-zA-Z_][a-zA-Z0-9_]*");
     regex err_decimal_multiple("[0-9]+\\.[0-9]+(\\.[0-9]+)+");
     
     size_t posicion = 0;
@@ -143,11 +149,21 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             continue;
         }
 
-        if (regex_search(restante, coincidencia, err_identificador, regex_constants::match_continuous))
-        {
-            errores.push_back({linea_actual, columna_actual, "Error Lexico", "Identificador mal formado (inicia con numeros)", coincidencia.str()});
-            avanzar(coincidencia.length(), coincidencia.str());
-            continue;
+        // Detectar identificador mal formado que inicia con números (ej. 123abc)
+        if (isdigit(static_cast<unsigned char>(restante[0]))) {
+            size_t idx = 0;
+            while (idx < restante.length() && isdigit(static_cast<unsigned char>(restante[idx]))) {
+                idx++;
+            }
+            if (idx < restante.length() && esInicioId(static_cast<unsigned char>(restante[idx]))) {
+                while (idx < restante.length() && esCuerpoId(static_cast<unsigned char>(restante[idx]))) {
+                    idx++;
+                }
+                string err_val = restante.substr(0, idx);
+                errores.push_back({linea_actual, columna_actual, "Error Lexico", "Identificador mal formado (inicia con numeros)", err_val});
+                avanzar(err_val.length(), err_val);
+                continue;
+            }
         }
 
         if (regex_search(restante, coincidencia, cadena, regex_constants::match_continuous))
@@ -178,9 +194,14 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             continue;
         }
 
-        if (regex_search(restante, coincidencia, identificador, regex_constants::match_continuous))
+        // Identificadores y palabras clave (soporta caracteres UTF-8 como ñ en celebrarCumpleaños)
+        if (esInicioId(static_cast<unsigned char>(restante[0])))
         {
-            string palabra = coincidencia.str();
+            size_t idx = 1;
+            while (idx < restante.length() && esCuerpoId(static_cast<unsigned char>(restante[idx]))) {
+                idx++;
+            }
+            string palabra = restante.substr(0, idx);
             if (palabrasClave.count(palabra))
             {
                 resultado.push_back({"PALABRA_CLAVE", palabra, linea_actual, columna_actual});
@@ -189,7 +210,7 @@ vector<Token> AnalizadorLexico::analizar(const string& codigo)
             {
                 resultado.push_back({"IDENTIFICADOR", palabra, linea_actual, columna_actual});
             }
-            avanzar(coincidencia.length(), coincidencia.str());
+            avanzar(palabra.length(), palabra);
             continue;
         }
 

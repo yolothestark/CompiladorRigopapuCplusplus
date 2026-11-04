@@ -10,132 +10,219 @@
 #include <iomanip>
 #include "AnalizadorLexico.h"
 #include "AnalizadorSintactico.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 using namespace std;
 
-void imprimirEncabezadoIntegrantes() {
-    cout << "==========================================================" << endl;
-    cout << "Integrantes del equipo:" << endl;
-    cout << "1. Anguiano Garcia Angel Yahir Guadalupe" << endl;
-    cout << "2. Figueroa Robles Axel Israel" << endl;
-    cout << "3. Molina Alvarado Alvaro Moises" << endl;
-    cout << "4. Torres Martinez Miguel Angel" << endl;
-    cout << "==========================================================" << endl;
-    cout << " PRACTICA: ANALISIS SEMANTICO (CONTROL Y METODOS)" << endl;
-    cout << "==========================================================" << endl << endl;
+void imprimirIntegrantes(const string& momento) {
+    cout << "======================================================================" << endl;
+    cout << "  INTEGRANTES DEL EQUIPO (" << momento << " DE EJECUCION):" << endl;
+    cout << "  1. Anguiano Garcia Angel Yahir Guadalupe" << endl;
+    cout << "  2. Figueroa Robles Axel Israel" << endl;
+    cout << "  3. Molina Alvarado Alvaro Moises" << endl;
+    cout << "  4. Torres Martinez Miguel Angel" << endl;
+    cout << "======================================================================" << endl;
 }
 
 void probarCodigo(const string& titulo, const string& codigoFuente) {
-    cout << "**********************************************************" << endl;
+    cout << "\n**********************************************************************" << endl;
     cout << "  " << titulo << endl;
-    cout << "**********************************************************" << endl;
+    cout << "**********************************************************************" << endl;
+
+    cout << "\n[1] CODIGO FUENTE DE ENTRADA:" << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << codigoFuente << endl;
+    cout << "----------------------------------------------------------------------" << endl;
 
     AnalizadorLexico lexico;
     vector<Token> tokens = lexico.analizar(codigoFuente);
 
+    cout << "\n[2] FASE LEXICA:" << endl;
     if (lexico.tieneErrores()) {
-        cout << "[!] Se detectaron errores léxicos previos." << endl;
+        cout << "  [!] Se detectaron errores lexicos:" << endl;
+        for (const auto& err : lexico.obtenerErrores()) {
+            cout << "      - Linea " << err.linea << ", Col " << err.columna 
+                 << ": " << err.mensaje << " ('" << err.valor << "')" << endl;
+        }
     } else {
-        cout << "[+] Análisis léxico completado sin errores (" << tokens.size() << " tokens)." << endl;
+        cout << "  [+] Analisis lexico completado sin errores (" << tokens.size() << " tokens generados)." << endl;
     }
 
     AnalizadorSintactico sintactico;
     sintactico.analizar(tokens);
 
-    cout << "\n----------------------------------------------------------" << endl;
-    cout << "           REPORTE SINTACTICO Y SEMANTICO                 " << endl;
-    cout << "----------------------------------------------------------" << endl;
-
+    cout << "\n[3] FASE SINTACTICA Y SEMANTICA:" << endl;
     if (sintactico.tieneErrores()) {
         const auto& errores = sintactico.obtenerErrores();
-        cout << "Se detectaron " << errores.size() << " error(es):\n" << endl;
+        cout << "  [!] Se detectaron " << errores.size() << " error(es):\n" << endl;
         for (const auto& err : errores) {
-            cout << ">> [" << err.tipo << "] " << err.mensaje 
-                 << " [Linea " << err.linea << ", Columna " << err.columna << "]" << endl;
+            cout << "      >> [" << err.tipo << "] Linea " << err.linea 
+                 << ", Columna " << err.columna << ": " << err.mensaje << endl;
         }
+        cout << "\n[4] GENERACION DE CODIGO INTERMEDIO (TRES DIRECCIONES):" << endl;
+        cout << "----------------------------------------------------------------------" << endl;
+        cout << "  [X] Generacion abortada: Se requiere corregir los errores previos." << endl;
+        cout << "----------------------------------------------------------------------\n" << endl;
     } else {
-        cout << ">>> [EXITO]: Codigo valido. No se detectaron errores sintacticos ni semanticos." << endl;
+        cout << "  [+] Validacion sintactica y semantica exitosa (0 errores)." << endl;
+        cout << "\n[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):" << endl;
+        cout << "----------------------------------------------------------------------" << endl;
+        sintactico.imprimirCodigoIntermedio();
+        cout << "----------------------------------------------------------------------\n" << endl;
     }
-    cout << "\n\n";
 }
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    imprimirEncabezadoIntegrantes();
+
+    // PRIMERA INSTRUCCIÓN DE IMPRESIÓN CON LOS NOMBRES COMPLETOS EN ORDEN ALFABÉTICO
+    imprimirIntegrantes("INICIO");
+
+    cout << "\n======================================================================" << endl;
+    cout << "  ACTIVIDAD 11.- CODIGO INTERMEDIO PARA CONTROL DE FLUJO" << endl;
+    cout << "======================================================================" << endl;
 
     // =========================================================================
-    // CASO 1: CODIGO VALIDO
-    // Debe compilar con 0 errores (cumple flujo, tipos y firmas de métodos).
+    // PRUEBA 1 (VÁLIDA): ESTRUCTURAS CONDICIONALES (if-else y switch)
     // =========================================================================
-    string casoValido = R"(
-        class ModuloValido {
-            int sumar(int a, int b) {
-                return a + b;
-            }
+    string pruebaCondicionales = R"(
+        int x = 10;
+        int y = 5;
+        int z = 0;
 
-            boolean esMayor(int edad) {
-                return edad >= 18;
-            }
+        if (x > y) {
+            z = x;
+        } else {
+            z = y;
+        }
 
-            void ejecutar() {
-                int x = 15;
-                int res = sumar(5, 3);
-                boolean autorizado = esMayor(20);
+        int n = 1;
+        string result = "";
 
-                if (x > 10) {
-                    x = x + 1;
-                } else {
-                    x = 0;
-                }
-
-                while (x < 20) {
-                    x = x + 1;
-                }
-            }
+        switch (n) {
+            case 1:
+                result = "Uno";
+                break;
+            case 2:
+                result = "Dos";
+                break;
+            default:
+                result = "Otro";
         }
     )";
 
     // =========================================================================
-    // CASO 2: CODIGO INVALIDO (PRUEBA DE ERRORES EXIGIDOS POR LA PRACTICA)
-    // 1. Condición de control no booleana (if con texto/entero).
-    // 2. Estructura de control sin llave de apertura o cierre.
-    // 3. Return con tipo de dato incompatible al declarado.
-    // 4. Llamada a método con tipo de argumento incorrecto.
-    // 5. Llamada a método con cantidad incorrecta de argumentos.
+    // PRUEBA 2 (VÁLIDA): ESTRUCTURAS DE BUCLES (while, for y do-while)
     // =========================================================================
-    string casoInvalido = R"(
+    string pruebaBucles = R"(
+        int i = 0;
+        while (i < 10) {
+            i = i + 1;
+        }
+
+        int sum = 0;
+        for (int k = 0; k < 5; k++) {
+            sum = sum + k;
+        }
+
+        int count = 0;
+        do {
+            count = count + 1;
+        } while (count < 10);
+    )";
+
+    // =========================================================================
+    // PRUEBA 3 (VÁLIDA): DEFINICIÓN Y LLAMADA DE MÉTODOS + CLASES Y OBJETOS
+    // =========================================================================
+    string pruebaMetodosYClases = R"(
+        int suma(int a, int b) {
+            return a + b;
+        }
+
+        int result = 0;
+        result = suma(5, 3);
+
+        class Persona {
+            int edad;
+            void celebrarCumpleaños() {
+                edad = edad + 1;
+            }
+        }
+
+        Persona p = new Persona();
+        p.celebrarCumpleaños();
+    )";
+
+    // =========================================================================
+    // PRUEBA 4 (INVÁLIDA): PRUEBA DE REGLAS INVÁLIDAS (ERRORES EN CADA REGLA)
+    // =========================================================================
+    string pruebaInvalida = R"(
         class ModuloErrores {
             int obtenerEdad() {
-                return "Veinte"; 
+                return "Veinte";
             }
 
             int multiplicar(int a, int b) {
                 return a * b;
             }
 
-            void probarErrores() {
-                // 1. Condicion no booleana en estructura de control
-                if ("texto") {
-                    int a = 1;
+            void probarReglasInvalidas() {
+                int opcion = 1;
+
+                // 1. Condicion no booleana en if
+                if ("texto_invalido") {
+                    opcion = 2;
                 }
 
-                // 2. Llamada con tipo de argumento incorrecto
-                int prod = multiplicar(10, "invalido");
+                // 2. Switch con case de tipo incompatible y case duplicado
+                switch (opcion) {
+                    case "uno":
+                        opcion = 10;
+                        break;
+                    case 1:
+                        opcion = 20;
+                        break;
+                    case 1:
+                        opcion = 30;
+                        break;
+                }
 
-                // 3. Llamada con cantidad de argumentos incorrecta
+                // 3. Break fuera de bucle o switch
+                break;
+
+                // 4. Condicion no booleana en while
+                while (100) {
+                    opcion = opcion + 1;
+                }
+
+                // 5. Condicion no booleana en for
+                for (int i = 0; "no_bool"; i++) {
+                    opcion = opcion + 1;
+                }
+
+                // 6. Condicion no booleana en do-while
+                do {
+                    opcion = opcion + 1;
+                } while (50);
+
+                // 7. Llamada a metodo con tipo y numero de argumentos incorrectos
+                int prod1 = multiplicar(10, "invalido");
                 int prod2 = multiplicar(5, 4, 3);
 
-                // 4. Condicion no booleana en bucle while
-                while (100) {
-                    int cont = 0;
-                }
+                // 8. Instanciacion de clase no declarada
+                 Vehiculo v = new Vehiculo();
             }
         }
     )";
 
-    probarCodigo("PRUEBA 1: CASO DE EJECUCION VALIDO", casoValido);
-    probarCodigo("PRUEBA 2: CASO DE EJECUCION CON ERRORES SEMANTICOS", casoInvalido);
+    probarCodigo("PRUEBA 1 (VALIDA): CONDICIONALES (if-else y switch)", pruebaCondicionales);
+    probarCodigo("PRUEBA 2 (VALIDA): BUCLES (while, for y do-while)", pruebaBucles);
+    probarCodigo("PRUEBA 3 (VALIDA): METODOS, CLASES Y OBJETOS", pruebaMetodosYClases);
+    probarCodigo("PRUEBA 4 (INVALIDA): DETECCION DE ERRORES EN TODAS LAS REGLAS", pruebaInvalida);
+
+    // ÚLTIMA INSTRUCCIÓN DE IMPRESIÓN CON LOS NOMBRES COMPLETOS EN ORDEN ALFABÉTICO
+    imprimirIntegrantes("FINAL");
 
     return 0;
 }

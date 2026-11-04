@@ -1,0 +1,287 @@
+======================================================================
+  INTEGRANTES DEL EQUIPO (INICIO DE EJECUCION):
+  1. Anguiano Garcia Angel Yahir Guadalupe
+  2. Figueroa Robles Axel Israel
+  3. Molina Alvarado Alvaro Moises
+  4. Torres Martinez Miguel Angel
+======================================================================
+
+======================================================================
+  ACTIVIDAD 11.- CODIGO INTERMEDIO PARA CONTROL DE FLUJO
+======================================================================
+
+**********************************************************************
+  PRUEBA 1 (VALIDA): CONDICIONALES (if-else y switch)
+**********************************************************************
+
+[1] CODIGO FUENTE DE ENTRADA:
+----------------------------------------------------------------------
+
+        int x = 10;
+        int y = 5;
+        int z = 0;
+
+        if (x > y) {
+            z = x;
+        } else {
+            z = y;
+        }
+
+        int n = 1;
+        string result = "";
+
+        switch (n) {
+            case 1:
+                result = "Uno";
+                break;
+            case 2:
+                result = "Dos";
+                break;
+            default:
+                result = "Otro";
+        }
+    
+----------------------------------------------------------------------
+
+[2] FASE LEXICA:
+  [+] Analisis lexico completado sin errores (74 tokens generados).
+
+[3] FASE SINTACTICA Y SEMANTICA:
+  [+] Validacion sintactica y semantica exitosa (0 errores).
+
+[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
+----------------------------------------------------------------------
+  x = 10                  # Asigna el valor 10 a x
+  y = 5                   # Asigna el valor 5 a y
+  z = 0                   # Asigna el valor 0 a z
+  t1 = x > y              # t1 es una etiqueta temporal para la condicion x > y
+  if t1 goto L1           # Si t1 es verdadero, salta a la etiqueta L1
+  z = y                   # Asigna el valor de y a z
+  goto L2                 # Salta a la etiqueta L2 despues del bloque else
+  L1:                     # Etiqueta L1 para el bloque if
+  z = x                   # Asigna el valor de x a z
+  L2:                     # Etiqueta L2 marca el final de la estructura condicional
+  n = 1                   # Asigna el valor 1 a n
+  result = ""             # Asigna el valor "" a result
+  t2 = n                  # t2 es una etiqueta temporal para el valor de n
+  if t2 == 1 goto L3      # Si t2 es 1, salta a la etiqueta L3
+  if t2 == 2 goto L4      # Si t2 es 2, salta a la etiqueta L4
+  goto L5                 # Si t2 no coincide con ningun caso, salta a la etiqueta L5
+  L3:                     # Etiqueta L3 para el caso 1
+  result = "Uno"          # Asigna el valor de "Uno" a result
+  goto L6                 # Salta a la etiqueta L6 despues de manejar el caso 1
+  L4:                     # Etiqueta L4 para el caso 2
+  result = "Dos"          # Asigna el valor de "Dos" a result
+  goto L6                 # Salta a la etiqueta L6 despues de manejar el caso 2
+  L5:                     # Etiqueta L5 para el caso default
+  result = "Otro"         # Asigna el valor de "Otro" a result
+  L6:                     # Etiqueta L6 marca el final de la estructura switch
+----------------------------------------------------------------------
+
+
+**********************************************************************
+  PRUEBA 2 (VALIDA): BUCLES (while, for y do-while)
+**********************************************************************
+
+[1] CODIGO FUENTE DE ENTRADA:
+----------------------------------------------------------------------
+
+        int i = 0;
+        while (i < 10) {
+            i = i + 1;
+        }
+
+        int sum = 0;
+        for (int k = 0; k < 5; k++) {
+            sum = sum + k;
+        }
+
+        int count = 0;
+        do {
+            count = count + 1;
+        } while (count < 10);
+    
+----------------------------------------------------------------------
+
+[2] FASE LEXICA:
+  [+] Analisis lexico completado sin errores (67 tokens generados).
+
+[3] FASE SINTACTICA Y SEMANTICA:
+  [+] Validacion sintactica y semantica exitosa (0 errores).
+
+[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
+----------------------------------------------------------------------
+  i = 0                   # Asigna el valor 0 a i
+  L1:                     # Etiqueta L1 marca el inicio del bucle
+  t1 = i < 10             # t1 es una etiqueta temporal para la condicion i < 10
+  if not t1 goto L2       # Si t1 es falso, salta a la etiqueta L2 (fin del bucle)
+  i = i + 1               # Incrementa i
+  goto L1                 # Salta de vuelta al inicio del bucle
+  L2:                     # Etiqueta L2 marca el final del bucle
+  sum = 0                 # Asigna el valor 0 a sum
+  k = 0                   # Inicializacion de k
+  L3:                     # Etiqueta L3 marca el inicio del bucle
+  t2 = k < 5              # t2 es una etiqueta temporal para la condicion k < 5
+  if not t2 goto L4       # Si t2 es falso, salta a la etiqueta L4 (fin del bucle)
+  t3 = sum + k            # t3 es una etiqueta temporal para la operacion sum + k
+  sum = t3                # Asigna el valor de t3 a sum
+  k = k + 1               # Incrementa k
+  goto L3                 # Salta de vuelta al inicio del bucle
+  L4:                     # Etiqueta L4 marca el final del bucle
+  count = 0               # Asigna el valor 0 a count
+  L5:                     # Etiqueta L5 marca el inicio del bucle
+  count = count + 1       # Incrementa count
+  t4 = count < 10         # t4 es una etiqueta temporal para la condicion count < 10
+  if t4 goto L5           # Si t4 es verdadero, salta de vuelta al inicio del bucle
+----------------------------------------------------------------------
+
+
+**********************************************************************
+  PRUEBA 3 (VALIDA): METODOS, CLASES Y OBJETOS
+**********************************************************************
+
+[1] CODIGO FUENTE DE ENTRADA:
+----------------------------------------------------------------------
+
+        int suma(int a, int b) {
+            return a + b;
+        }
+
+        int result = 0;
+        result = suma(5, 3);
+
+        class Persona {
+            int edad;
+            void celebrarCumpleaños() {
+                edad = edad + 1;
+            }
+        }
+
+        Persona p = new Persona();
+        p.celebrarCumpleaños();
+    
+----------------------------------------------------------------------
+
+[2] FASE LEXICA:
+  [+] Analisis lexico completado sin errores (63 tokens generados).
+
+[3] FASE SINTACTICA Y SEMANTICA:
+  [+] Validacion sintactica y semantica exitosa (0 errores).
+
+[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
+----------------------------------------------------------------------
+  # Definicion del metodo suma
+  L1:                     # Etiqueta L1 marca el inicio del metodo suma
+  t1 = a + b              # t1 es una etiqueta temporal para la operacion a + b
+  return t1               # Retorna el valor de t1
+  result = 0              # Asigna el valor 0 a result
+  t2 = 5                  # t2 es una etiqueta temporal para el parametro 1
+  t3 = 3                  # t3 es una etiqueta temporal para el parametro 2
+  call L1                 # Llama al metodo suma definido en la etiqueta L1
+  result = return_value   # Asigna el valor retornado por el metodo a result
+  # Definicion de la clase Persona
+  L2:                     # Etiqueta L2 marca el inicio del metodo celebrarCumpleaños
+  t4 = edad + 1           # t4 es una etiqueta temporal para la operacion edad + 1
+  edad = t4               # Asigna el valor de t4 a edad
+  # Creacion del objeto Persona
+  obj = create Persona    # Representa la creacion del objeto p
+  call L2                 # Llama al metodo celebrarCumpleaños del objeto p
+----------------------------------------------------------------------
+
+
+**********************************************************************
+  PRUEBA 4 (INVALIDA): DETECCION DE ERRORES EN TODAS LAS REGLAS
+**********************************************************************
+
+[1] CODIGO FUENTE DE ENTRADA:
+----------------------------------------------------------------------
+
+        class ModuloErrores {
+            int obtenerEdad() {
+                return "Veinte";
+            }
+
+            int multiplicar(int a, int b) {
+                return a * b;
+            }
+
+            void probarReglasInvalidas() {
+                int opcion = 1;
+
+                // 1. Condicion no booleana en if
+                if ("texto_invalido") {
+                    opcion = 2;
+                }
+
+                // 2. Switch con case de tipo incompatible y case duplicado
+                switch (opcion) {
+                    case "uno":
+                        opcion = 10;
+                        break;
+                    case 1:
+                        opcion = 20;
+                        break;
+                    case 1:
+                        opcion = 30;
+                        break;
+                }
+
+                // 3. Break fuera de bucle o switch
+                break;
+
+                // 4. Condicion no booleana en while
+                while (100) {
+                    opcion = opcion + 1;
+                }
+
+                // 5. Condicion no booleana en for
+                for (int i = 0; "no_bool"; i++) {
+                    opcion = opcion + 1;
+                }
+
+                // 6. Condicion no booleana en do-while
+                do {
+                    opcion = opcion + 1;
+                } while (50);
+
+                // 7. Llamada a metodo con tipo y numero de argumentos incorrectos
+                int prod1 = multiplicar(10, "invalido");
+                int prod2 = multiplicar(5, 4, 3);
+
+                // 8. Instanciacion de clase no declarada
+                 Vehiculo v = new Vehiculo();
+            }
+        }
+    
+----------------------------------------------------------------------
+
+[2] FASE LEXICA:
+  [+] Analisis lexico completado sin errores (161 tokens generados).
+
+[3] FASE SINTACTICA Y SEMANTICA:
+  [!] Se detectaron 11 error(es):
+
+      >> [Semantico] Linea 4, Columna 17: El metodo 'obtenerEdad' debe retornar 'int' pero retorno 'string'.
+      >> [Semantico] Linea 15, Columna 17: La condicion del 'if' debe ser de tipo boolean (recibido: string).
+      >> [Semantico] Linea 21, Columna 26: El tipo del 'case' (string) es incompatible con la expresion del 'switch' (int).
+      >> [Semantico] Linea 27, Columna 26: Valor de 'case' duplicado (1) en 'switch'.
+      >> [Semantico] Linea 33, Columna 17: La sentencia 'break' solo puede usarse dentro de un bucle o estructura 'switch'.
+      >> [Semantico] Linea 36, Columna 17: La condicion del 'while' debe ser de tipo boolean (recibido: int).
+      >> [Semantico] Linea 41, Columna 33: La condicion del 'for' debe ser de tipo boolean.
+      >> [Semantico] Linea 48, Columna 19: La condicion del 'do-while' debe ser de tipo boolean (recibido: int).
+      >> [Semantico] Linea 51, Columna 29: Argumento 2 en llamada a 'multiplicar' es de tipo 'string', se esperaba 'int'.
+      >> [Semantico] Linea 52, Columna 29: Llamada al metodo 'multiplicar' con 3 argumentos en lugar de 2.
+      >> [Semantico] Linea 55, Columna 18: La clase 'Vehiculo' no ha sido declarada.
+
+[4] GENERACION DE CODIGO INTERMEDIO (TRES DIRECCIONES):
+----------------------------------------------------------------------
+  [X] Generacion abortada: Se requiere corregir los errores previos.
+----------------------------------------------------------------------
+
+======================================================================
+  INTEGRANTES DEL EQUIPO (FINAL DE EJECUCION):
+  1. Anguiano Garcia Angel Yahir Guadalupe
+  2. Figueroa Robles Axel Israel
+  3. Molina Alvarado Alvaro Moises
+  4. Torres Martinez Miguel Angel
+======================================================================
