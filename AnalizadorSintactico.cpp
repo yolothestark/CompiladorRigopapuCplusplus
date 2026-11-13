@@ -349,6 +349,23 @@ void AnalizadorSintactico::sentencia() {
     else if (comprobar("PALABRA_CLAVE", "break")) {
         sentenciaBreak();
     }
+    else if (comprobar("PALABRA_CLAVE", "goto")) {
+        avanzar(); // consume 'goto'
+        Token tokEtiq = tokenActual();
+        if (!coincidir("IDENTIFICADOR")) {
+            reportarError("Se esperaba un identificador de etiqueta despues de 'goto'.");
+        } else {
+            generador.emitir("goto " + tokEtiq.valor, "Salto incondicional a la etiqueta " + tokEtiq.valor);
+        }
+        if (!coincidir("SIMBOLO", ";")) {
+            reportarError("Se esperaba ';' al final de la sentencia 'goto'.");
+        }
+    }
+    else if (comprobar("IDENTIFICADOR") && tokenSiguiente().tipo == "SIMBOLO" && tokenSiguiente().valor == ":") {
+        Token tokEtiq = avanzar(); // consume identificador
+        avanzar(); // consume ':'
+        generador.emitirEtiqueta(tokEtiq.valor, "Declaracion de la etiqueta " + tokEtiq.valor);
+    }
     else if (comprobar("SIMBOLO", "{")) {
         tablaSimbolos.entrarAmbito();
         bloque();

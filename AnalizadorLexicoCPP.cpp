@@ -10,219 +10,158 @@
 #include <iomanip>
 #include "AnalizadorLexico.h"
 #include "AnalizadorSintactico.h"
+#include "GeneradorCodigoIntermedio.hpp"
+#include "OptimizadorCodigo.hpp"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 using namespace std;
 
-void imprimirIntegrantes(const string& momento) {
-    cout << "======================================================================" << endl;
-    cout << "  INTEGRANTES DEL EQUIPO (" << momento << " DE EJECUCION):" << endl;
-    cout << "  1. Anguiano Garcia Angel Yahir Guadalupe" << endl;
-    cout << "  2. Figueroa Robles Axel Israel" << endl;
-    cout << "  3. Molina Alvarado Alvaro Moises" << endl;
-    cout << "  4. Torres Martinez Miguel Angel" << endl;
-    cout << "======================================================================" << endl;
+// Ejecuta una prueba directa de optimización sobre tuplas de Código Intermedio (TAC)
+void probarReglaTAC(const string& titulo, const vector<InstruccionTAC>& tuplasEntrada) {
+    cout << "\n================================================================================" << endl;
+    cout << "  " << titulo << endl;
+    cout << "================================================================================" << endl;
+
+    OptimizadorCodigo optimizador;
+    optimizador.optimizar(tuplasEntrada);
+    optimizador.imprimirComparativa();
 }
 
-void probarCodigo(const string& titulo, const string& codigoFuente) {
-    cout << "\n**********************************************************************" << endl;
+// Ejecuta el flujo completo del compilador: Léxico -> Sintáctico/Semántico -> TAC -> Optimizador
+void probarFlujoCompletoCompilador(const string& titulo, const string& codigoFuente) {
+    cout << "\n================================================================================" << endl;
     cout << "  " << titulo << endl;
-    cout << "**********************************************************************" << endl;
+    cout << "================================================================================" << endl;
 
     cout << "\n[1] CODIGO FUENTE DE ENTRADA:" << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
     cout << codigoFuente << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
 
     AnalizadorLexico lexico;
     vector<Token> tokens = lexico.analizar(codigoFuente);
 
     cout << "\n[2] FASE LEXICA:" << endl;
     if (lexico.tieneErrores()) {
-        cout << "  [!] Se detectaron errores lexicos:" << endl;
         for (const auto& err : lexico.obtenerErrores()) {
-            cout << "      - Linea " << err.linea << ", Col " << err.columna 
-                 << ": " << err.mensaje << " ('" << err.valor << "')" << endl;
+            cout << "  [!] Error Lexico (Linea " << err.linea << ", Col " << err.columna
+                 << "): " << err.mensaje << " ('" << err.valor << "')" << endl;
         }
-    } else {
-        cout << "  [+] Analisis lexico completado sin errores (" << tokens.size() << " tokens generados)." << endl;
+        return;
     }
+    cout << "  [+] Analisis lexico completado sin errores (" << tokens.size() << " tokens generados)." << endl;
 
     AnalizadorSintactico sintactico;
     sintactico.analizar(tokens);
 
     cout << "\n[3] FASE SINTACTICA Y SEMANTICA:" << endl;
     if (sintactico.tieneErrores()) {
-        const auto& errores = sintactico.obtenerErrores();
-        cout << "  [!] Se detectaron " << errores.size() << " error(es):\n" << endl;
-        for (const auto& err : errores) {
-            cout << "      >> [" << err.tipo << "] Linea " << err.linea 
-                 << ", Columna " << err.columna << ": " << err.mensaje << endl;
+        for (const auto& err : sintactico.obtenerErrores()) {
+            cout << "  [!] [" << err.tipo << "] Linea " << err.linea
+                 << ", Col " << err.columna << ": " << err.mensaje << endl;
         }
-        cout << "\n[4] GENERACION DE CODIGO INTERMEDIO (TRES DIRECCIONES):" << endl;
-        cout << "----------------------------------------------------------------------" << endl;
-        cout << "  [X] Generacion abortada: Se requiere corregir los errores previos." << endl;
-        cout << "----------------------------------------------------------------------\n" << endl;
-    } else {
-        cout << "  [+] Validacion sintactica y semantica exitosa (0 errores)." << endl;
-        cout << "\n[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):" << endl;
-        cout << "----------------------------------------------------------------------" << endl;
-        sintactico.imprimirCodigoIntermedio();
-        cout << "----------------------------------------------------------------------\n" << endl;
+        return;
     }
+    cout << "  [+] Validacion sintactica y semantica exitosa (0 errores)." << endl;
+
+    cout << "\n[4] GENERACION Y OPTIMIZACION DE CODIGO INTERMEDIO (3 DIRECCIONES):" << endl;
+    const vector<InstruccionTAC>& tacOriginal = sintactico.obtenerGenerador().obtenerInstrucciones();
+
+    OptimizadorCodigo optimizador;
+    optimizador.optimizar(tacOriginal);
+    optimizador.imprimirComparativa();
 }
 
 int main() {
+    std::cout << "Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel" << std::endl;
+
     SetConsoleOutputCP(CP_UTF8);
 
-    // PRIMERA INSTRUCCIÓN DE IMPRESIÓN CON LOS NOMBRES COMPLETOS EN ORDEN ALFABÉTICO
-    imprimirIntegrantes("INICIO");
-
-    cout << "\n======================================================================" << endl;
-    cout << "  ACTIVIDAD 11.- CODIGO INTERMEDIO PARA CONTROL DE FLUJO" << endl;
-    cout << "======================================================================" << endl;
+    cout << "\n================================================================================" << endl;
+    cout << "  OPTIMIZACION DE CODIGO INTERMEDIO - COMPILADOR C++" << endl;
+    cout << "================================================================================" << endl;
 
     // =========================================================================
-    // PRUEBA 1 (VÁLIDA): ESTRUCTURAS CONDICIONALES (if-else y switch)
+    // PRUEBA 1: REGLA 1 - IDENTIFICACIÓN DE CÓDIGO MUERTO (SALTOS GOTO)
     // =========================================================================
-    string pruebaCondicionales = R"(
-        int x = 10;
-        int y = 5;
-        int z = 0;
+    vector<InstruccionTAC> casoRegla1 = {
+        {"a = 10", "Asigna el valor 10 a a", false},
+        {"b = 20", "Asigna el valor 20 a b", false},
+        {"goto L_FIN", "Salto incondicional hacia L_FIN", false},
+        {"a = 999", "Codigo muerto (inaccesible tras goto)", false},
+        {"b = 888", "Codigo muerto (inaccesible tras goto)", false},
+        {"L_FIN:", "Declaracion de etiqueta L_FIN", false},
+        {"t1 = a + b", "Calcula a + b en t1", false},
+        {"result = t1", "Asigna resultado final a result", false}
+    };
+    probarReglaTAC("PRUEBA 1: REGLA 1 - IDENTIFICACION DE CODIGO MUERTO (SALTOS GOTO)", casoRegla1);
 
-        if (x > y) {
-            z = x;
-        } else {
-            z = y;
-        }
+    // =========================================================================
+    // PRUEBA 2: REGLA 2 - ANÁLISIS DE VARIABLES NO UTILIZADAS
+    // =========================================================================
+    vector<InstruccionTAC> casoRegla2 = {
+        {"a = 15", "Asigna el valor 15 a a", false},
+        {"b = 25", "Asigna el valor 25 a b", false},
+        {"varSinUso1 = 100", "Variable asignada pero nunca leida", false},
+        {"varSinUso2 = 500", "Variable asignada pero nunca leida", false},
+        {"t1 = a + b", "Calcula a + b en t1", false},
+        {"result = t1", "Asigna el resultado final a result", false}
+    };
+    probarReglaTAC("PRUEBA 2: REGLA 2 - ANALISIS DE VARIABLES NO UTILIZADAS", casoRegla2);
 
-        int n = 1;
-        string result = "";
+    // =========================================================================
+    // PRUEBA 3: REGLA 3 - ELIMINACIÓN DE CÁLCULOS REPETIDOS (REDUNDANTES)
+    // Ejemplo exacto: t1 = a + b; t2 = a + b; result = t1; -> t1 = a + b; result = t1;
+    // =========================================================================
+    vector<InstruccionTAC> casoRegla3 = {
+        {"t1 = a + b", "Primer calculo de a + b en t1", false},
+        {"t2 = a + b", "Calculo repetido de a + b en t2", false},
+        {"result = t1", "Asigna t1 al resultado final", false}
+    };
+    probarReglaTAC("PRUEBA 3: REGLA 3 - ELIMINACION DE CALCULOS REPETIDOS (REDUNDANTES)", casoRegla3);
 
-        switch (n) {
-            case 1:
-                result = "Uno";
-                break;
-            case 2:
-                result = "Dos";
-                break;
-            default:
-                result = "Otro";
-        }
+    // =========================================================================
+    // PRUEBA 4: REGLA 4 - ELIMINACIÓN DE ASIGNACIONES INNECESARIAS
+    // Ejemplo exacto: temp = a; temp = b; result = temp; -> result = b;
+    // =========================================================================
+    vector<InstruccionTAC> casoRegla4 = {
+        {"temp = a", "Asigna a en temp (sera sobrescrita)", false},
+        {"temp = b", "Sobrescribe temp con el valor de b", false},
+        {"result = temp", "Asigna temp al resultado final", false}
+    };
+    probarReglaTAC("PRUEBA 4: REGLA 4 - ELIMINACION DE ASIGNACIONES INNECESARIAS", casoRegla4);
+
+    // =========================================================================
+    // PRUEBA 5: INTEGRACIÓN COMPLETA DEL COMPILADOR (LAS 4 REGLAS COMBINADAS)
+    // =========================================================================
+    string codigoFuenteIntegral = R"(
+        int a = 10;
+        int b = 20;
+
+        // Regla 2: Variable asignada pero nunca utilizada
+        int basura = 999;
+
+        // Regla 3: Calculos repetidos (a + b dos veces sin cambiar a ni b)
+        int suma1 = a + b;
+        int suma2 = a + b;
+
+        // Regla 1: Salto incondicional con instrucciones muertas antes de L_SALIDA
+        goto L_SALIDA;
+        a = 500;
+        b = 600;
+        L_SALIDA:
+
+        // Regla 4: Asignaciones innecesarias (sobrescritura inmediata y copia)
+        int temp = a;
+        temp = suma1;
+        int result = temp;
     )";
+    probarFlujoCompletoCompilador(
+        "PRUEBA 5: PIPELINE COMPLETO DEL COMPILADOR (LAS 4 REGLAS INTEGRADAS)",
+        codigoFuenteIntegral
+    );
 
-    // =========================================================================
-    // PRUEBA 2 (VÁLIDA): ESTRUCTURAS DE BUCLES (while, for y do-while)
-    // =========================================================================
-    string pruebaBucles = R"(
-        int i = 0;
-        while (i < 10) {
-            i = i + 1;
-        }
-
-        int sum = 0;
-        for (int k = 0; k < 5; k++) {
-            sum = sum + k;
-        }
-
-        int count = 0;
-        do {
-            count = count + 1;
-        } while (count < 10);
-    )";
-
-    // =========================================================================
-    // PRUEBA 3 (VÁLIDA): DEFINICIÓN Y LLAMADA DE MÉTODOS + CLASES Y OBJETOS
-    // =========================================================================
-    string pruebaMetodosYClases = R"(
-        int suma(int a, int b) {
-            return a + b;
-        }
-
-        int result = 0;
-        result = suma(5, 3);
-
-        class Persona {
-            int edad;
-            void celebrarCumpleaños() {
-                edad = edad + 1;
-            }
-        }
-
-        Persona p = new Persona();
-        p.celebrarCumpleaños();
-    )";
-
-    // =========================================================================
-    // PRUEBA 4 (INVÁLIDA): PRUEBA DE REGLAS INVÁLIDAS (ERRORES EN CADA REGLA)
-    // =========================================================================
-    string pruebaInvalida = R"(
-        class ModuloErrores {
-            int obtenerEdad() {
-                return "Veinte";
-            }
-
-            int multiplicar(int a, int b) {
-                return a * b;
-            }
-
-            void probarReglasInvalidas() {
-                int opcion = 1;
-
-                // 1. Condicion no booleana en if
-                if ("texto_invalido") {
-                    opcion = 2;
-                }
-
-                // 2. Switch con case de tipo incompatible y case duplicado
-                switch (opcion) {
-                    case "uno":
-                        opcion = 10;
-                        break;
-                    case 1:
-                        opcion = 20;
-                        break;
-                    case 1:
-                        opcion = 30;
-                        break;
-                }
-
-                // 3. Break fuera de bucle o switch
-                break;
-
-                // 4. Condicion no booleana en while
-                while (100) {
-                    opcion = opcion + 1;
-                }
-
-                // 5. Condicion no booleana en for
-                for (int i = 0; "no_bool"; i++) {
-                    opcion = opcion + 1;
-                }
-
-                // 6. Condicion no booleana en do-while
-                do {
-                    opcion = opcion + 1;
-                } while (50);
-
-                // 7. Llamada a metodo con tipo y numero de argumentos incorrectos
-                int prod1 = multiplicar(10, "invalido");
-                int prod2 = multiplicar(5, 4, 3);
-
-                // 8. Instanciacion de clase no declarada
-                 Vehiculo v = new Vehiculo();
-            }
-        }
-    )";
-
-    probarCodigo("PRUEBA 1 (VALIDA): CONDICIONALES (if-else y switch)", pruebaCondicionales);
-    probarCodigo("PRUEBA 2 (VALIDA): BUCLES (while, for y do-while)", pruebaBucles);
-    probarCodigo("PRUEBA 3 (VALIDA): METODOS, CLASES Y OBJETOS", pruebaMetodosYClases);
-    probarCodigo("PRUEBA 4 (INVALIDA): DETECCION DE ERRORES EN TODAS LAS REGLAS", pruebaInvalida);
-
-    // ÚLTIMA INSTRUCCIÓN DE IMPRESIÓN CON LOS NOMBRES COMPLETOS EN ORDEN ALFABÉTICO
-    imprimirIntegrantes("FINAL");
-
+    std::cout << "Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel" << std::endl;
     return 0;
 }

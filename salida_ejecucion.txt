@@ -1,287 +1,261 @@
-======================================================================
-  INTEGRANTES DEL EQUIPO (INICIO DE EJECUCION):
-  1. Anguiano Garcia Angel Yahir Guadalupe
-  2. Figueroa Robles Axel Israel
-  3. Molina Alvarado Alvaro Moises
-  4. Torres Martinez Miguel Angel
-======================================================================
+Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel
 
-======================================================================
-  ACTIVIDAD 11.- CODIGO INTERMEDIO PARA CONTROL DE FLUJO
-======================================================================
+================================================================================
+  MODULO DE OPTIMIZACION DE CODIGO INTERMEDIO - COMPILADOR RIGOPAPU C++
+================================================================================
 
-**********************************************************************
-  PRUEBA 1 (VALIDA): CONDICIONALES (if-else y switch)
-**********************************************************************
+================================================================================
+  PRUEBA 1: REGLA 1 - IDENTIFICACION DE CODIGO MUERTO (SALTOS GOTO)
+================================================================================
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 10                       | Asigna el valor 10 a a                 |
+|   2  | b = 20                       | Asigna el valor 20 a b                 |
+|   3  | goto L_FIN                   | Salto incondicional hacia L_FIN        |
+|   4  | a = 999                      | Codigo muerto (inaccesible tras goto)  |
+|   5  | b = 888                      | Codigo muerto (inaccesible tras goto)  |
+|   6  | L_FIN:                       | Declaracion de etiqueta L_FIN          |
+|   7  | t1 = a + b                   | Calcula a + b en t1                    |
+|   8  | result = t1                  | Asigna resultado final a result        |
++------+------------------------------+----------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
++-----------------------------------+----------------------------------------------------------------+
+| Regla Aplicada                    | Detalle de la Transformacion                                   |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 1: Codigo Muerto (Saltos)   | Tupla: a = 999                                                 |
+|                                   | -> Eliminada tras 'goto L_FIN' (inaccesible antes de 'L_FIN:') |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 1: Codigo Muerto (Saltos)   | Tupla: b = 888                                                 |
+|                                   | -> Eliminada tras 'goto L_FIN' (inaccesible antes de 'L_FIN:') |
++-----------------------------------+----------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 10                       | Asigna el valor 10 a a                 |
+|   2  | b = 20                       | Asigna el valor 20 a b                 |
+|   3  | goto L_FIN                   | Salto incondicional hacia L_FIN        |
+|   4  | L_FIN:                       | Declaracion de etiqueta L_FIN          |
+|   5  | t1 = a + b                   | Calcula a + b en t1                    |
+|   6  | result = t1                  | Asigna resultado final a result        |
++------+------------------------------+----------------------------------------+
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 8 | Instrucciones optimizadas: 6 | Reduccion: 2 tupla(s) (25.0%)
+
+================================================================================
+  PRUEBA 2: REGLA 2 - ANALISIS DE VARIABLES NO UTILIZADAS
+================================================================================
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 15                       | Asigna el valor 15 a a                 |
+|   2  | b = 25                       | Asigna el valor 25 a b                 |
+|   3  | varSinUso1 = 100             | Variable asignada pero nunca leida     |
+|   4  | varSinUso2 = 500             | Variable asignada pero nunca leida     |
+|   5  | t1 = a + b                   | Calcula a + b en t1                    |
+|   6  | result = t1                  | Asigna el resultado final a result     |
++------+------------------------------+----------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
++-----------------------------------+----------------------------------------------------------------+
+| Regla Aplicada                    | Detalle de la Transformacion                                   |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 2: Variable No Utilizada    | Tupla: varSinUso1 = 100                                        |
+|                                   | -> Eliminada porque la variable 'varSinUso1' nunca es leida... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 2: Variable No Utilizada    | Tupla: varSinUso2 = 500                                        |
+|                                   | -> Eliminada porque la variable 'varSinUso2' nunca es leida... |
++-----------------------------------+----------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 15                       | Asigna el valor 15 a a                 |
+|   2  | b = 25                       | Asigna el valor 25 a b                 |
+|   3  | t1 = a + b                   | Calcula a + b en t1                    |
+|   4  | result = t1                  | Asigna el resultado final a result     |
++------+------------------------------+----------------------------------------+
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 6 | Instrucciones optimizadas: 4 | Reduccion: 2 tupla(s) (33.3%)
+
+================================================================================
+  PRUEBA 3: REGLA 3 - ELIMINACION DE CALCULOS REPETIDOS (REDUNDANTES)
+================================================================================
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | t1 = a + b                   | Primer calculo de a + b en t1          |
+|   2  | t2 = a + b                   | Calculo repetido de a + b en t2        |
+|   3  | result = t1                  | Asigna t1 al resultado final           |
++------+------------------------------+----------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
++-----------------------------------+----------------------------------------------------------------+
+| Regla Aplicada                    | Detalle de la Transformacion                                   |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 3: Calculo Repetido         | Tupla: t2 = a + b                                              |
+|                                   | -> Reutiliza 't1' para 'a + b' y elimina 't2'                  |
++-----------------------------------+----------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | t1 = a + b                   | Primer calculo de a + b en t1          |
+|   2  | result = t1                  | Asigna t1 al resultado final           |
++------+------------------------------+----------------------------------------+
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 3 | Instrucciones optimizadas: 2 | Reduccion: 1 tupla(s) (33.3%)
+
+================================================================================
+  PRUEBA 4: REGLA 4 - ELIMINACION DE ASIGNACIONES INNECESARIAS
+================================================================================
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | temp = a                     | Asigna a en temp (sera sobrescrita)    |
+|   2  | temp = b                     | Sobrescribe temp con el valor de b     |
+|   3  | result = temp                | Asigna temp al resultado final         |
++------+------------------------------+----------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
++-----------------------------------+----------------------------------------------------------------+
+| Regla Aplicada                    | Detalle de la Transformacion                                   |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 4: Asignacion Innecesaria   | Tupla: temp = a                                                |
+|                                   | -> Eliminada porque 'temp' es sobrescrita en 'temp = b' sin... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 4: Asignacion Innecesaria   | Tupla: temp = b ; result = temp                                |
+|                                   | -> Simplificada a 'result = b' (elimina 'temp')                |
++-----------------------------------+----------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | result = b                   | Asigna directamente b a result (opt... |
++------+------------------------------+----------------------------------------+
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 3 | Instrucciones optimizadas: 1 | Reduccion: 2 tupla(s) (66.7%)
+
+================================================================================
+  PRUEBA 5: PIPELINE COMPLETO DEL COMPILADOR (LAS 4 REGLAS INTEGRADAS)
+================================================================================
 
 [1] CODIGO FUENTE DE ENTRADA:
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-        int x = 10;
-        int y = 5;
-        int z = 0;
+        int a = 10;
+        int b = 20;
 
-        if (x > y) {
-            z = x;
-        } else {
-            z = y;
-        }
+        // Regla 2: Variable asignada pero nunca utilizada
+        int basura = 999;
 
-        int n = 1;
-        string result = "";
+        // Regla 3: Calculos repetidos (a + b dos veces sin cambiar a ni b)
+        int suma1 = a + b;
+        int suma2 = a + b;
 
-        switch (n) {
-            case 1:
-                result = "Uno";
-                break;
-            case 2:
-                result = "Dos";
-                break;
-            default:
-                result = "Otro";
-        }
+        // Regla 1: Salto incondicional con instrucciones muertas antes de L_SALIDA
+        goto L_SALIDA;
+        a = 500;
+        b = 600;
+        L_SALIDA:
+
+        // Regla 4: Asignaciones innecesarias (sobrescritura inmediata y copia)
+        int temp = a;
+        temp = suma1;
+        int result = temp;
     
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 [2] FASE LEXICA:
-  [+] Analisis lexico completado sin errores (74 tokens generados).
+  [+] Analisis lexico completado sin errores (56 tokens generados).
 
 [3] FASE SINTACTICA Y SEMANTICA:
   [+] Validacion sintactica y semantica exitosa (0 errores).
 
-[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
-----------------------------------------------------------------------
-  x = 10                  # Asigna el valor 10 a x
-  y = 5                   # Asigna el valor 5 a y
-  z = 0                   # Asigna el valor 0 a z
-  t1 = x > y              # t1 es una etiqueta temporal para la condicion x > y
-  if t1 goto L1           # Si t1 es verdadero, salta a la etiqueta L1
-  z = y                   # Asigna el valor de y a z
-  goto L2                 # Salta a la etiqueta L2 despues del bloque else
-  L1:                     # Etiqueta L1 para el bloque if
-  z = x                   # Asigna el valor de x a z
-  L2:                     # Etiqueta L2 marca el final de la estructura condicional
-  n = 1                   # Asigna el valor 1 a n
-  result = ""             # Asigna el valor "" a result
-  t2 = n                  # t2 es una etiqueta temporal para el valor de n
-  if t2 == 1 goto L3      # Si t2 es 1, salta a la etiqueta L3
-  if t2 == 2 goto L4      # Si t2 es 2, salta a la etiqueta L4
-  goto L5                 # Si t2 no coincide con ningun caso, salta a la etiqueta L5
-  L3:                     # Etiqueta L3 para el caso 1
-  result = "Uno"          # Asigna el valor de "Uno" a result
-  goto L6                 # Salta a la etiqueta L6 despues de manejar el caso 1
-  L4:                     # Etiqueta L4 para el caso 2
-  result = "Dos"          # Asigna el valor de "Dos" a result
-  goto L6                 # Salta a la etiqueta L6 despues de manejar el caso 2
-  L5:                     # Etiqueta L5 para el caso default
-  result = "Otro"         # Asigna el valor de "Otro" a result
-  L6:                     # Etiqueta L6 marca el final de la estructura switch
-----------------------------------------------------------------------
+[4] GENERACION Y OPTIMIZACION DE CODIGO INTERMEDIO (3 DIRECCIONES):
 
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 10                       | Asigna el valor 10 a a                 |
+|   2  | b = 20                       | Asigna el valor 20 a b                 |
+|   3  | basura = 999                 | Asigna el valor 999 a basura           |
+|   4  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
+|   5  | suma1 = t1                   | Asigna el valor t1 a suma1             |
+|   6  | t2 = a + b                   | t2 es una etiqueta temporal para la... |
+|   7  | suma2 = t2                   | Asigna el valor t2 a suma2             |
+|   8  | goto L_SALIDA                | Salto incondicional a la etiqueta L... |
+|   9  | a = 500                      | Asigna el valor de 500 a a             |
+|  10  | b = 600                      | Asigna el valor de 600 a b             |
+|  11  | L_SALIDA:                    | Declaracion de la etiqueta L_SALIDA    |
+|  12  | temp = a                     | Asigna el valor a a temp               |
+|  13  | temp = suma1                 | Asigna el valor de suma1 a temp        |
+|  14  | result = temp                | Asigna el valor temp a result          |
++------+------------------------------+----------------------------------------+
 
-**********************************************************************
-  PRUEBA 2 (VALIDA): BUCLES (while, for y do-while)
-**********************************************************************
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
++-----------------------------------+----------------------------------------------------------------+
+| Regla Aplicada                    | Detalle de la Transformacion                                   |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 1: Codigo Muerto (Saltos)   | Tupla: a = 500                                                 |
+|                                   | -> Eliminada tras 'goto L_SALIDA' (inaccesible antes de 'L_... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 1: Codigo Muerto (Saltos)   | Tupla: b = 600                                                 |
+|                                   | -> Eliminada tras 'goto L_SALIDA' (inaccesible antes de 'L_... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 3: Calculo Repetido         | Tupla: t2 = a + b                                              |
+|                                   | -> Reutiliza 't1' para 'a + b' y elimina 't2'                  |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 4: Asignacion Innecesaria   | Tupla: temp = a                                                |
+|                                   | -> Eliminada porque 'temp' es sobrescrita en 'temp = suma1'... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 4: Asignacion Innecesaria   | Tupla: temp = suma1 ; result = temp                            |
+|                                   | -> Simplificada a 'result = suma1' (elimina 'temp')            |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 2: Variable No Utilizada    | Tupla: basura = 999                                            |
+|                                   | -> Eliminada porque la variable 'basura' nunca es leida en ... |
++-----------------------------------+----------------------------------------------------------------+
+| Regla 2: Variable No Utilizada    | Tupla: suma2 = t1                                              |
+|                                   | -> Eliminada porque la variable 'suma2' nunca es leida en c... |
++-----------------------------------+----------------------------------------------------------------+
 
-[1] CODIGO FUENTE DE ENTRADA:
-----------------------------------------------------------------------
-
-        int i = 0;
-        while (i < 10) {
-            i = i + 1;
-        }
-
-        int sum = 0;
-        for (int k = 0; k < 5; k++) {
-            sum = sum + k;
-        }
-
-        int count = 0;
-        do {
-            count = count + 1;
-        } while (count < 10);
-    
-----------------------------------------------------------------------
-
-[2] FASE LEXICA:
-  [+] Analisis lexico completado sin errores (67 tokens generados).
-
-[3] FASE SINTACTICA Y SEMANTICA:
-  [+] Validacion sintactica y semantica exitosa (0 errores).
-
-[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
-----------------------------------------------------------------------
-  i = 0                   # Asigna el valor 0 a i
-  L1:                     # Etiqueta L1 marca el inicio del bucle
-  t1 = i < 10             # t1 es una etiqueta temporal para la condicion i < 10
-  if not t1 goto L2       # Si t1 es falso, salta a la etiqueta L2 (fin del bucle)
-  i = i + 1               # Incrementa i
-  goto L1                 # Salta de vuelta al inicio del bucle
-  L2:                     # Etiqueta L2 marca el final del bucle
-  sum = 0                 # Asigna el valor 0 a sum
-  k = 0                   # Inicializacion de k
-  L3:                     # Etiqueta L3 marca el inicio del bucle
-  t2 = k < 5              # t2 es una etiqueta temporal para la condicion k < 5
-  if not t2 goto L4       # Si t2 es falso, salta a la etiqueta L4 (fin del bucle)
-  t3 = sum + k            # t3 es una etiqueta temporal para la operacion sum + k
-  sum = t3                # Asigna el valor de t3 a sum
-  k = k + 1               # Incrementa k
-  goto L3                 # Salta de vuelta al inicio del bucle
-  L4:                     # Etiqueta L4 marca el final del bucle
-  count = 0               # Asigna el valor 0 a count
-  L5:                     # Etiqueta L5 marca el inicio del bucle
-  count = count + 1       # Incrementa count
-  t4 = count < 10         # t4 es una etiqueta temporal para la condicion count < 10
-  if t4 goto L5           # Si t4 es verdadero, salta de vuelta al inicio del bucle
-----------------------------------------------------------------------
-
-
-**********************************************************************
-  PRUEBA 3 (VALIDA): METODOS, CLASES Y OBJETOS
-**********************************************************************
-
-[1] CODIGO FUENTE DE ENTRADA:
-----------------------------------------------------------------------
-
-        int suma(int a, int b) {
-            return a + b;
-        }
-
-        int result = 0;
-        result = suma(5, 3);
-
-        class Persona {
-            int edad;
-            void celebrarCumpleaños() {
-                edad = edad + 1;
-            }
-        }
-
-        Persona p = new Persona();
-        p.celebrarCumpleaños();
-    
-----------------------------------------------------------------------
-
-[2] FASE LEXICA:
-  [+] Analisis lexico completado sin errores (63 tokens generados).
-
-[3] FASE SINTACTICA Y SEMANTICA:
-  [+] Validacion sintactica y semantica exitosa (0 errores).
-
-[4] CODIGO INTERMEDIO GENERADO (REPRESENTACION DE 3 DIRECCIONES):
-----------------------------------------------------------------------
-  # Definicion del metodo suma
-  L1:                     # Etiqueta L1 marca el inicio del metodo suma
-  t1 = a + b              # t1 es una etiqueta temporal para la operacion a + b
-  return t1               # Retorna el valor de t1
-  result = 0              # Asigna el valor 0 a result
-  t2 = 5                  # t2 es una etiqueta temporal para el parametro 1
-  t3 = 3                  # t3 es una etiqueta temporal para el parametro 2
-  call L1                 # Llama al metodo suma definido en la etiqueta L1
-  result = return_value   # Asigna el valor retornado por el metodo a result
-  # Definicion de la clase Persona
-  L2:                     # Etiqueta L2 marca el inicio del metodo celebrarCumpleaños
-  t4 = edad + 1           # t4 es una etiqueta temporal para la operacion edad + 1
-  edad = t4               # Asigna el valor de t4 a edad
-  # Creacion del objeto Persona
-  obj = create Persona    # Representa la creacion del objeto p
-  call L2                 # Llama al metodo celebrarCumpleaños del objeto p
-----------------------------------------------------------------------
-
-
-**********************************************************************
-  PRUEBA 4 (INVALIDA): DETECCION DE ERRORES EN TODAS LAS REGLAS
-**********************************************************************
-
-[1] CODIGO FUENTE DE ENTRADA:
-----------------------------------------------------------------------
-
-        class ModuloErrores {
-            int obtenerEdad() {
-                return "Veinte";
-            }
-
-            int multiplicar(int a, int b) {
-                return a * b;
-            }
-
-            void probarReglasInvalidas() {
-                int opcion = 1;
-
-                // 1. Condicion no booleana en if
-                if ("texto_invalido") {
-                    opcion = 2;
-                }
-
-                // 2. Switch con case de tipo incompatible y case duplicado
-                switch (opcion) {
-                    case "uno":
-                        opcion = 10;
-                        break;
-                    case 1:
-                        opcion = 20;
-                        break;
-                    case 1:
-                        opcion = 30;
-                        break;
-                }
-
-                // 3. Break fuera de bucle o switch
-                break;
-
-                // 4. Condicion no booleana en while
-                while (100) {
-                    opcion = opcion + 1;
-                }
-
-                // 5. Condicion no booleana en for
-                for (int i = 0; "no_bool"; i++) {
-                    opcion = opcion + 1;
-                }
-
-                // 6. Condicion no booleana en do-while
-                do {
-                    opcion = opcion + 1;
-                } while (50);
-
-                // 7. Llamada a metodo con tipo y numero de argumentos incorrectos
-                int prod1 = multiplicar(10, "invalido");
-                int prod2 = multiplicar(5, 4, 3);
-
-                // 8. Instanciacion de clase no declarada
-                 Vehiculo v = new Vehiculo();
-            }
-        }
-    
-----------------------------------------------------------------------
-
-[2] FASE LEXICA:
-  [+] Analisis lexico completado sin errores (161 tokens generados).
-
-[3] FASE SINTACTICA Y SEMANTICA:
-  [!] Se detectaron 11 error(es):
-
-      >> [Semantico] Linea 4, Columna 17: El metodo 'obtenerEdad' debe retornar 'int' pero retorno 'string'.
-      >> [Semantico] Linea 15, Columna 17: La condicion del 'if' debe ser de tipo boolean (recibido: string).
-      >> [Semantico] Linea 21, Columna 26: El tipo del 'case' (string) es incompatible con la expresion del 'switch' (int).
-      >> [Semantico] Linea 27, Columna 26: Valor de 'case' duplicado (1) en 'switch'.
-      >> [Semantico] Linea 33, Columna 17: La sentencia 'break' solo puede usarse dentro de un bucle o estructura 'switch'.
-      >> [Semantico] Linea 36, Columna 17: La condicion del 'while' debe ser de tipo boolean (recibido: int).
-      >> [Semantico] Linea 41, Columna 33: La condicion del 'for' debe ser de tipo boolean.
-      >> [Semantico] Linea 48, Columna 19: La condicion del 'do-while' debe ser de tipo boolean (recibido: int).
-      >> [Semantico] Linea 51, Columna 29: Argumento 2 en llamada a 'multiplicar' es de tipo 'string', se esperaba 'int'.
-      >> [Semantico] Linea 52, Columna 29: Llamada al metodo 'multiplicar' con 3 argumentos en lugar de 2.
-      >> [Semantico] Linea 55, Columna 18: La clase 'Vehiculo' no ha sido declarada.
-
-[4] GENERACION DE CODIGO INTERMEDIO (TRES DIRECCIONES):
-----------------------------------------------------------------------
-  [X] Generacion abortada: Se requiere corregir los errores previos.
-----------------------------------------------------------------------
-
-======================================================================
-  INTEGRANTES DEL EQUIPO (FINAL DE EJECUCION):
-  1. Anguiano Garcia Angel Yahir Guadalupe
-  2. Figueroa Robles Axel Israel
-  3. Molina Alvarado Alvaro Moises
-  4. Torres Martinez Miguel Angel
-======================================================================
++------------------------------------------------------------------------------+
+| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
++------+------------------------------+----------------------------------------+
+|   1  | a = 10                       | Asigna el valor 10 a a                 |
+|   2  | b = 20                       | Asigna el valor 20 a b                 |
+|   3  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
+|   4  | suma1 = t1                   | Asigna el valor t1 a suma1             |
+|   5  | goto L_SALIDA                | Salto incondicional a la etiqueta L... |
+|   6  | L_SALIDA:                    | Declaracion de la etiqueta L_SALIDA    |
+|   7  | result = suma1               | Asigna directamente suma1 a result ... |
++------+------------------------------+----------------------------------------+
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 14 | Instrucciones optimizadas: 7 | Reduccion: 7 tupla(s) (50.0%)
+Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel
