@@ -14,7 +14,11 @@ using namespace std;
 
 namespace {
 
-// Estructura auxiliar para analizar sintácticamente cada tupla de código intermedio (TAC)
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
 struct InfoTupla {
     bool esSeccion = false;
     bool esEtiqueta = false;
@@ -295,6 +299,11 @@ void OptimizadorCodigo::eliminarCodigoMuertoSaltos(vector<InstruccionTAC>& instr
 // REGLA 3: Eliminación de Cálculos Repetidos (Redundantes)
 // ============================================================================
 void OptimizadorCodigo::eliminarCalculosRepetidos(vector<InstruccionTAC>& instrucciones) {
+    // Nombres de integrantes:
+    // 1. Anguiano Garcia Angel Yahir Guadalupe
+    // 2. Figueroa Robles Axel Israel
+    // 3. Molina Alvarado Alvaro Moises
+    // 4. Torres Martinez Miguel Angel
     struct CalculoRegistrado {
         string op1;
         string operador;
