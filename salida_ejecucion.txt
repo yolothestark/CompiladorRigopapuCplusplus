@@ -1,26 +1,195 @@
 Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel
 
 ================================================================================
-  MODULO DE OPTIMIZACION DE CODIGO INTERMEDIO - COMPILADOR RIGOPAPU C++
+  ACTIVIDAD 13.- GENERACION DE CODIGO (CODIGO MAQUINA Y EJECUCION) - C++
 ================================================================================
 
 ================================================================================
-  PRUEBA 1: REGLA 1 - IDENTIFICACION DE CODIGO MUERTO (SALTOS GOTO)
+  PRUEBA 1 (VALIDA): 1.1. MAPEO DE INSTRUCCIONES (TAC A CODIGO MAQUINA)
 ================================================================================
+
++------------------------------------------------------------------------------+
+| 1.1. CODIGO INTERMEDIO DE ENTRADA (3 DIRECCIONES - TAC)                      |
++------+------------------------------+----------------------------------------+
+| No.  | Instruccion Intermedia       | Descripcion                            |
++------+------------------------------+----------------------------------------+
+|   1  | t1 = a + b                   | Suma a y b en el temporal t1           |
+|   2  | t2 = t1 * c                  | Multiplica t1 por c en el temporal t2  |
+|   3  | result = t2                  | Asigna el resultado final a result     |
++------+------------------------------+----------------------------------------+
+
++------------------------------------------------------------------------------------+
+| 1.1. TRADUCCION A CODIGO MAQUINA (MAPEO DE INSTRUCCIONES DEL PROCESADOR)           |
++------+------------------------------+----------------------------------------------+
+| No.  | Instruccion de Maquina (ASM) | Comentario / Accion en Procesador            |
++------+------------------------------+----------------------------------------------+
+|   1  | LOAD R1, a                   | # Carguen el valor de a en el registro R1    |
+|   2  | ADD R1, b                    | # Sumen el valor de b al registro R1         |
+|   3  | MUL R1, c                    | # Multipliquen el valor en R1 por c          |
+|   4  | STORE result, R1             | # Almacenen el resultado en la variable r... |
++------+------------------------------+----------------------------------------------+
+
+================================================================================
+  PRUEBA 2 (VALIDA): 1.2. OPTIMIZACION DE INSTRUCCIONES DE MAQUINA
+================================================================================
+
++------------------------------------------------------------------------------------+
+| 1.2. CODIGO MAQUINA BASE (ANTES DE OPTIMIZAR INSTRUCCIONES DE MAQUINA)             |
++------+------------------------------+----------------------------------------------+
+|   1  | LOAD R1, a                   | # Carguen el valor de a en el registro R1    |
+|   2  | ADD R1, b                    | # Sumen el valor de b al registro R1         |
+|   3  | STORE t1, R1                 | # Almacenen el resultado temporal en t1      |
+|   4  | LOAD R1, t1                  | # Carguen el valor de t1 en el registro R1   |
+|   5  | ADD R1, c                    | # Sumen el valor de c al registro R1         |
+|   6  | STORE t2, R1                 | # Almacenen el resultado temporal en t2      |
+|   7  | LOAD R1, t2                  | # Carguen el valor de t2 en el registro R1   |
+|   8  | STORE result, R1             | # Almacenen el resultado en la variable r... |
++------+------------------------------+----------------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| BITACORA DE OPTIMIZACION DE INSTRUCCIONES DE MAQUINA                                               |
++-------------------------------------+--------------------------------------------------------------+
+| Regla de Optimizacion               | Transformacion Aplicada                                      |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M1: Retencion en Registro R1  | Instruccion(es): STORE t1, R1  +  LOAD R1, t1                |
+|                                     | -> Eliminados STORE/LOAD redundantes del temporal 't1' (v... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M1: Retencion en Registro R1  | Instruccion(es): STORE t2, R1  +  LOAD R1, t2                |
+|                                     | -> Eliminados STORE/LOAD redundantes del temporal 't2' (v... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M2: Acumulacion Aditiva en R1 | Instruccion(es): LOAD R1, a -> ADD R1, a                     |
+|                                     | -> Unifica cadena de sumas acumulando directamente sobre ... |
++-------------------------------------+--------------------------------------------------------------+
+
++------------------------------------------------------------------------------------+
+| 1.2. CODIGO MAQUINA OPTIMIZADO (DESPUES DE OPTIMIZAR INSTRUCCIONES)                |
++------+------------------------------+----------------------------------------------+
+| No.  | Instruccion Optimizada       | Comentario / Accion en Procesador            |
++------+------------------------------+----------------------------------------------+
+|   1  | ADD R1, a                    | # Sumen a R1                                 |
+|   2  | ADD R1, b                    | # Sumen a R1                                 |
+|   3  | ADD R1, c                    | # Sumen c a R1                               |
+|   4  | STORE result, R1             | # Almacenen el resultado en result           |
++------+------------------------------+----------------------------------------------+
+  [METRICAS DE CODIGO MAQUINA]: Instrucciones base: 8 | Instrucciones optimizadas: 4 | Reduccion: 4 instruccion(es) (50.0%)
+
+================================================================================
+  PRUEBA 3 (VALIDA): 2. ASIGNACION DE DIRECCIONES DE MEMORIA Y TABLA DE SIMBOLOS
+================================================================================
+
++----------------------------------------------------------------------------------------------------+
+| 2.1. ASIGNACION DE DIRECCIONES DE MEMORIA AL CODIGO MAQUINA                                        |
++------------+------------+----------------------------+---------------------------------------------+
+| Direccion  | Codigo Hex | Instruccion Direccionada   | Comentario                                  |
++------------+------------+----------------------------+---------------------------------------------+
+| 0x1000:    | 0x01102000 | LOAD R1, 0x2000            | # [L1] Carguen el valor de a en el regis... |
+| 0x1004:    | 0x10102004 | ADD R1, 0x2004             | # Sumen el valor de b al registro R1        |
+| 0x1008:    | 0x12102008 | MUL R1, 0x2008             | # [L2] Multipliquen el valor en R1 por c    |
+| 0x100C:    | 0x02103000 | STORE 0x3000, R1           | # Almacenen el resultado en la variable ... |
++------------+------------+----------------------------+---------------------------------------------+
+
++--------------------------------------------------------------+
+| 2.2. TABLA DE SIMBOLOS DE DIRECCIONES DE MEMORIA             |
++------------------+-------------+------------+----------------+
+| Simbolo          | Direccion   | Segmento   | Categoria      |
++------------------+-------------+------------+----------------+
+| a                | 0x2000      | .data      | Variable       |
+| b                | 0x2004      | .data      | Variable       |
+| c                | 0x2008      | .data      | Variable       |
+| result           | 0x3000      | .result    | Resultado      |
+| L1               | 0x1000      | .text      | Etiqueta       |
+| L2               | 0x1008      | .text      | Etiqueta       |
++------------------+-------------+------------+----------------+
+
+================================================================================
+  PRUEBA 4 (VALIDA): 3. PREPARACION PARA LA EJECUCION Y SIMULACION DE CPU
+================================================================================
+
++----------------------------------------------------------------------------------------------------+
+| 3.1. CREACION DE ARCHIVO EJECUTABLE Y 3.2. CONFIGURACION DEL ENTORNO DE EJECUCION                  |
++----------------------------------------------------------------------------------------------------+
+| [CABECERA DEL EJECUTABLE]                                                                          |
+|   Archivo Generado : programa_ejecutable_p4.rpe                                                    |
+|   Magic Number     : 7F 52 50 45 (RPE - RigoPapu Executable)                                       |
+|   Arquitectura     : RigoPapu-32 RISC Processor (32-bit)                                           |
+|   Mapa de Memoria  : Entry Point: 0x1000 | .text: 0x1000 (16 B) | .data: 0x2000 (16 B) | .result: 0x3000 |
+| [CONFIGURACION DEL ENTORNO DE EJECUCION]                                                           |
+|   Permisos .text   : r-x (Lectura y Ejecucion)                                                     |
+|   Permisos .data   : rw- (Lectura y Escritura)                                                     |
+|   Libreria Cargada : librigocore_runtime.rlib (Gestion de registros y ALU de 32 bits)              |
+|   Libreria Cargada : libmem_Win32.rlib        (Asignacion de segmentos 0x1000, 0x2000, 0x3000)     |
+|   Libreria Cargada : libio_console.rlib       (Entrada/Salida estandar del sistema objetivo)       |
++----------------------------------------------------------------------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| 3.3. TRAZA DE EJECUCION EN EL PROCESADOR OBJETIVO (CICLO FETCH - DECODE - EXECUTE)                 |
++-------+----------+----------------------------+-------------+--------------------------------------+
+| Ciclo | PC       | Instruccion Ejecutada      | Registro R1 | Efecto en Registros / Memoria RAM    |
++-------+----------+----------------------------+-------------+--------------------------------------+
+|    1  | 0x1000   | LOAD R1, 0x2000            |          10 | R1 <- 10 (a)                         |
+|    2  | 0x1004   | ADD R1, 0x2004             |          30 | R1 <- R1 + 20 = 30                   |
+|    3  | 0x1008   | MUL R1, 0x2008             |          90 | R1 <- R1 * 3 = 90                    |
+|    4  | 0x100C   | STORE 0x3000, R1           |          90 | [0x3000 (result)] <- 90              |
++-------+----------+----------------------------+-------------+--------------------------------------+
+  [ESTADO FINAL DE MEMORIA TRAS LA EJECUCION]:
+    -> [0x2000] a            = 10 (Variable)
+    -> [0x2004] b            = 20 (Variable)
+    -> [0x2008] c            = 3 (Variable)
+    -> [0x3000] result       = 90 (Resultado)
+
+================================================================================
+  PRUEBA 5 (VALIDA): PIPELINE COMPLETO DEL COMPILADOR (FUENTE C++ A EJECUTABLE)
+================================================================================
+
+[FASE 1] CODIGO FUENTE DE ENTRADA:
+--------------------------------------------------------------------------------
+
+        int a = 12;
+        int b = 8;
+        int c = 4;
+
+        // Variable sin uso (sera limpiada en fase de optimizacion TAC)
+        int basura = 777;
+
+        // Expresion aritmetica combinada
+        int suma = a + b;
+        int producto = suma * c;
+
+        // Salto con codigo muerto intermedio
+        goto L_CALCULO_FINAL;
+        a = 999;
+        L_CALCULO_FINAL:
+
+        int result = producto - 10;
+    
+--------------------------------------------------------------------------------
+
+[FASE 2] ANALISIS LEXICO:
+  [+] Analisis lexico completado sin errores (50 tokens generados).
+
+[FASE 3] ANALISIS SINTACTICO Y SEMANTICO:
+  [+] Validacion sintactica y semantica exitosa (0 errores).
+
+[FASE 4] GENERACION Y OPTIMIZACION DE CODIGO INTERMEDIO (TAC):
 
 +------------------------------------------------------------------------------+
 | CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
 +------+------------------------------+----------------------------------------+
 | No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
 +------+------------------------------+----------------------------------------+
-|   1  | a = 10                       | Asigna el valor 10 a a                 |
-|   2  | b = 20                       | Asigna el valor 20 a b                 |
-|   3  | goto L_FIN                   | Salto incondicional hacia L_FIN        |
-|   4  | a = 999                      | Codigo muerto (inaccesible tras goto)  |
-|   5  | b = 888                      | Codigo muerto (inaccesible tras goto)  |
-|   6  | L_FIN:                       | Declaracion de etiqueta L_FIN          |
-|   7  | t1 = a + b                   | Calcula a + b en t1                    |
-|   8  | result = t1                  | Asigna resultado final a result        |
+|   1  | a = 12                       | Asigna el valor 12 a a                 |
+|   2  | b = 8                        | Asigna el valor 8 a b                  |
+|   3  | c = 4                        | Asigna el valor 4 a c                  |
+|   4  | basura = 777                 | Asigna el valor 777 a basura           |
+|   5  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
+|   6  | suma = t1                    | Asigna el valor t1 a suma              |
+|   7  | t2 = suma * c                | t2 es una etiqueta temporal para la... |
+|   8  | producto = t2                | Asigna el valor t2 a producto          |
+|   9  | goto L_CALCULO_FINAL         | Salto incondicional a la etiqueta L... |
+|  10  | a = 999                      | Asigna el valor de 999 a a             |
+|  11  | L_CALCULO_FINAL:             | Declaracion de la etiqueta L_CALCUL... |
+|  12  | t3 = producto - 10           | t3 es una etiqueta temporal para la... |
+|  13  | result = t3                  | Asigna el valor t3 a result            |
 +------+------------------------------+----------------------------------------+
 
 +----------------------------------------------------------------------------------------------------+
@@ -29,10 +198,10 @@ Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvar
 | Regla Aplicada                    | Detalle de la Transformacion                                   |
 +-----------------------------------+----------------------------------------------------------------+
 | Regla 1: Codigo Muerto (Saltos)   | Tupla: a = 999                                                 |
-|                                   | -> Eliminada tras 'goto L_FIN' (inaccesible antes de 'L_FIN:') |
+|                                   | -> Eliminada tras 'goto L_CALCULO_FINAL' (inaccesible antes... |
 +-----------------------------------+----------------------------------------------------------------+
-| Regla 1: Codigo Muerto (Saltos)   | Tupla: b = 888                                                 |
-|                                   | -> Eliminada tras 'goto L_FIN' (inaccesible antes de 'L_FIN:') |
+| Regla 2: Variable No Utilizada    | Tupla: basura = 777                                            |
+|                                   | -> Eliminada porque la variable 'basura' nunca es leida en ... |
 +-----------------------------------+----------------------------------------------------------------+
 
 +------------------------------------------------------------------------------+
@@ -40,222 +209,253 @@ Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvar
 +------+------------------------------+----------------------------------------+
 | No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
 +------+------------------------------+----------------------------------------+
-|   1  | a = 10                       | Asigna el valor 10 a a                 |
-|   2  | b = 20                       | Asigna el valor 20 a b                 |
-|   3  | goto L_FIN                   | Salto incondicional hacia L_FIN        |
-|   4  | L_FIN:                       | Declaracion de etiqueta L_FIN          |
-|   5  | t1 = a + b                   | Calcula a + b en t1                    |
-|   6  | result = t1                  | Asigna resultado final a result        |
+|   1  | a = 12                       | Asigna el valor 12 a a                 |
+|   2  | b = 8                        | Asigna el valor 8 a b                  |
+|   3  | c = 4                        | Asigna el valor 4 a c                  |
+|   4  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
+|   5  | suma = t1                    | Asigna el valor t1 a suma              |
+|   6  | t2 = suma * c                | t2 es una etiqueta temporal para la... |
+|   7  | producto = t2                | Asigna el valor t2 a producto          |
+|   8  | goto L_CALCULO_FINAL         | Salto incondicional a la etiqueta L... |
+|   9  | L_CALCULO_FINAL:             | Declaracion de la etiqueta L_CALCUL... |
+|  10  | t3 = producto - 10           | t3 es una etiqueta temporal para la... |
+|  11  | result = t3                  | Asigna el valor t3 a result            |
 +------+------------------------------+----------------------------------------+
-  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 8 | Instrucciones optimizadas: 6 | Reduccion: 2 tupla(s) (25.0%)
+  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 13 | Instrucciones optimizadas: 11 | Reduccion: 2 tupla(s) (15.4%)
 
-================================================================================
-  PRUEBA 2: REGLA 2 - ANALISIS DE VARIABLES NO UTILIZADAS
-================================================================================
+[FASE 5] GENERACION DE CODIGO MAQUINA, DIRECCIONAMIENTO Y EJECUCION:
 
 +------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
+| 1.1. CODIGO INTERMEDIO DE ENTRADA (3 DIRECCIONES - TAC)                      |
 +------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
+| No.  | Instruccion Intermedia       | Descripcion                            |
 +------+------------------------------+----------------------------------------+
-|   1  | a = 15                       | Asigna el valor 15 a a                 |
-|   2  | b = 25                       | Asigna el valor 25 a b                 |
-|   3  | varSinUso1 = 100             | Variable asignada pero nunca leida     |
-|   4  | varSinUso2 = 500             | Variable asignada pero nunca leida     |
-|   5  | t1 = a + b                   | Calcula a + b en t1                    |
-|   6  | result = t1                  | Asigna el resultado final a result     |
+|   1  | a = 12                       | Asigna el valor 12 a a                 |
+|   2  | b = 8                        | Asigna el valor 8 a b                  |
+|   3  | c = 4                        | Asigna el valor 4 a c                  |
+|   4  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
+|   5  | suma = t1                    | Asigna el valor t1 a suma              |
+|   6  | t2 = suma * c                | t2 es una etiqueta temporal para la... |
+|   7  | producto = t2                | Asigna el valor t2 a producto          |
+|   8  | goto L_CALCULO_FINAL         | Salto incondicional a la etiqueta L... |
+|   9  | L_CALCULO_FINAL:             | Declaracion de la etiqueta L_CALCUL... |
+|  10  | t3 = producto - 10           | t3 es una etiqueta temporal para la... |
+|  11  | result = t3                  | Asigna el valor t3 a result            |
 +------+------------------------------+----------------------------------------+
+
++------------------------------------------------------------------------------------+
+| 1.1. TRADUCCION A CODIGO MAQUINA (MAPEO DE INSTRUCCIONES DEL PROCESADOR)           |
++------+------------------------------+----------------------------------------------+
+| No.  | Instruccion de Maquina (ASM) | Comentario / Accion en Procesador            |
++------+------------------------------+----------------------------------------------+
+|   1  | LOAD R1, 12                  | # Carguen el valor de 12 en el registro R1   |
+|   2  | STORE a, R1                  | # Almacenen el resultado en la variable a    |
+|   3  | LOAD R1, 8                   | # Carguen el valor de 8 en el registro R1    |
+|   4  | STORE b, R1                  | # Almacenen el resultado en la variable b    |
+|   5  | LOAD R1, 4                   | # Carguen el valor de 4 en el registro R1    |
+|   6  | STORE c, R1                  | # Almacenen el resultado en la variable c    |
+|   7  | LOAD R1, a                   | # Carguen el valor de a en el registro R1    |
+|   8  | ADD R1, b                    | # Sumen el valor de b al registro R1         |
+|   9  | STORE suma, R1               | # Almacenen el resultado en la variable suma |
+|  10  | MUL R1, c                    | # Multipliquen el valor en R1 por c          |
+|  11  | STORE producto, R1           | # Almacenen el resultado en la variable p... |
+|  12  | JMP L_CALCULO_FINAL          | # Salto incondicional a L_CALCULO_FINAL      |
+|  13  | LOAD R1, producto            | # Carguen el valor de producto en el regi... |
+|  14  | SUB R1, 10                   | # Resten el valor de 10 al registro R1       |
+|  15  | STORE result, R1             | # Almacenen el resultado en la variable r... |
++------+------------------------------+----------------------------------------------+
+
++------------------------------------------------------------------------------------+
+| 1.2. CODIGO MAQUINA BASE (ANTES DE OPTIMIZAR INSTRUCCIONES DE MAQUINA)             |
++------+------------------------------+----------------------------------------------+
+|   1  | LOAD R1, 12                  | # Carguen el valor de 12 en el registro R1   |
+|   2  | STORE a, R1                  | # Almacenen el resultado en la variable a    |
+|   3  | LOAD R1, 8                   | # Carguen el valor de 8 en el registro R1    |
+|   4  | STORE b, R1                  | # Almacenen el resultado en la variable b    |
+|   5  | LOAD R1, 4                   | # Carguen el valor de 4 en el registro R1    |
+|   6  | STORE c, R1                  | # Almacenen el resultado en la variable c    |
+|   7  | LOAD R1, a                   | # Carguen el valor de a en el registro R1    |
+|   8  | ADD R1, b                    | # Sumen el valor de b al registro R1         |
+|   9  | STORE t1, R1                 | # Almacenen el resultado temporal en t1      |
+|  10  | LOAD R1, t1                  | # Carguen el valor de t1 en el registro R1   |
+|  11  | STORE suma, R1               | # Almacenen el resultado en la variable suma |
+|  12  | LOAD R1, suma                | # Carguen el valor de suma en el registro R1 |
+|  13  | MUL R1, c                    | # Multipliquen el valor en R1 por c          |
+|  14  | STORE t2, R1                 | # Almacenen el resultado temporal en t2      |
+|  15  | LOAD R1, t2                  | # Carguen el valor de t2 en el registro R1   |
+|  16  | STORE producto, R1           | # Almacenen el resultado en la variable p... |
+|  17  | JMP L_CALCULO_FINAL          | # Salto incondicional a L_CALCULO_FINAL      |
+|  18  | LOAD R1, producto            | # Carguen el valor de producto en el regi... |
+|  19  | SUB R1, 10                   | # Resten el valor de 10 al registro R1       |
+|  20  | STORE t3, R1                 | # Almacenen el resultado temporal en t3      |
+|  21  | LOAD R1, t3                  | # Carguen el valor de t3 en el registro R1   |
+|  22  | STORE result, R1             | # Almacenen el resultado en la variable r... |
++------+------------------------------+----------------------------------------------+
 
 +----------------------------------------------------------------------------------------------------+
-| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla Aplicada                    | Detalle de la Transformacion                                   |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 2: Variable No Utilizada    | Tupla: varSinUso1 = 100                                        |
-|                                   | -> Eliminada porque la variable 'varSinUso1' nunca es leida... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 2: Variable No Utilizada    | Tupla: varSinUso2 = 500                                        |
-|                                   | -> Eliminada porque la variable 'varSinUso2' nunca es leida... |
-+-----------------------------------+----------------------------------------------------------------+
+| BITACORA DE OPTIMIZACION DE INSTRUCCIONES DE MAQUINA                                               |
++-------------------------------------+--------------------------------------------------------------+
+| Regla de Optimizacion               | Transformacion Aplicada                                      |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M1: Retencion en Registro R1  | Instruccion(es): STORE t1, R1  +  LOAD R1, t1                |
+|                                     | -> Eliminados STORE/LOAD redundantes del temporal 't1' (v... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M1: Retencion en Registro R1  | Instruccion(es): STORE t2, R1  +  LOAD R1, t2                |
+|                                     | -> Eliminados STORE/LOAD redundantes del temporal 't2' (v... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M1: Retencion en Registro R1  | Instruccion(es): STORE t3, R1  +  LOAD R1, t3                |
+|                                     | -> Eliminados STORE/LOAD redundantes del temporal 't3' (v... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M3: Carga Redundante Peephole | Instruccion(es): LOAD R1, suma                               |
+|                                     | -> Eliminada porque el registro R1 ya contiene el valor d... |
++-------------------------------------+--------------------------------------------------------------+
+| Regla M4: Salto Contiguo Innecesario | Instruccion(es): JMP L_CALCULO_FINAL                         |
+|                                     | -> Eliminado salto hacia 'L_CALCULO_FINAL' por ser la sig... |
++-------------------------------------+--------------------------------------------------------------+
 
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | a = 15                       | Asigna el valor 15 a a                 |
-|   2  | b = 25                       | Asigna el valor 25 a b                 |
-|   3  | t1 = a + b                   | Calcula a + b en t1                    |
-|   4  | result = t1                  | Asigna el resultado final a result     |
-+------+------------------------------+----------------------------------------+
-  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 6 | Instrucciones optimizadas: 4 | Reduccion: 2 tupla(s) (33.3%)
-
-================================================================================
-  PRUEBA 3: REGLA 3 - ELIMINACION DE CALCULOS REPETIDOS (REDUNDANTES)
-================================================================================
-
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | t1 = a + b                   | Primer calculo de a + b en t1          |
-|   2  | t2 = a + b                   | Calculo repetido de a + b en t2        |
-|   3  | result = t1                  | Asigna t1 al resultado final           |
-+------+------------------------------+----------------------------------------+
-
-+----------------------------------------------------------------------------------------------------+
-| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla Aplicada                    | Detalle de la Transformacion                                   |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 3: Calculo Repetido         | Tupla: t2 = a + b                                              |
-|                                   | -> Reutiliza 't1' para 'a + b' y elimina 't2'                  |
-+-----------------------------------+----------------------------------------------------------------+
-
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | t1 = a + b                   | Primer calculo de a + b en t1          |
-|   2  | result = t1                  | Asigna t1 al resultado final           |
-+------+------------------------------+----------------------------------------+
-  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 3 | Instrucciones optimizadas: 2 | Reduccion: 1 tupla(s) (33.3%)
-
-================================================================================
-  PRUEBA 4: REGLA 4 - ELIMINACION DE ASIGNACIONES INNECESARIAS
-================================================================================
-
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | temp = a                     | Asigna a en temp (sera sobrescrita)    |
-|   2  | temp = b                     | Sobrescribe temp con el valor de b     |
-|   3  | result = temp                | Asigna temp al resultado final         |
-+------+------------------------------+----------------------------------------+
++------------------------------------------------------------------------------------+
+| 1.2. CODIGO MAQUINA OPTIMIZADO (DESPUES DE OPTIMIZAR INSTRUCCIONES)                |
++------+------------------------------+----------------------------------------------+
+| No.  | Instruccion Optimizada       | Comentario / Accion en Procesador            |
++------+------------------------------+----------------------------------------------+
+|   1  | LOAD R1, 12                  | # Carguen el valor de 12 en el registro R1   |
+|   2  | STORE a, R1                  | # Almacenen el resultado en la variable a    |
+|   3  | LOAD R1, 8                   | # Carguen el valor de 8 en el registro R1    |
+|   4  | STORE b, R1                  | # Almacenen el resultado en la variable b    |
+|   5  | LOAD R1, 4                   | # Carguen el valor de 4 en el registro R1    |
+|   6  | STORE c, R1                  | # Almacenen el resultado en la variable c    |
+|   7  | LOAD R1, a                   | # Carguen el valor de a en el registro R1    |
+|   8  | ADD R1, b                    | # Sumen el valor de b al registro R1         |
+|   9  | STORE suma, R1               | # Almacenen el resultado en la variable suma |
+|  10  | MUL R1, c                    | # Multipliquen el valor en R1 por c          |
+|  11  | STORE producto, R1           | # Almacenen el resultado en la variable p... |
+|  12  | LOAD R1, producto            | # Carguen el valor de producto en el regi... |
+|  13  | SUB R1, 10                   | # Resten el valor de 10 al registro R1       |
+|  14  | STORE result, R1             | # Almacenen el resultado en la variable r... |
++------+------------------------------+----------------------------------------------+
+  [METRICAS DE CODIGO MAQUINA]: Instrucciones base: 22 | Instrucciones optimizadas: 14 | Reduccion: 8 instruccion(es) (36.4%)
 
 +----------------------------------------------------------------------------------------------------+
-| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla Aplicada                    | Detalle de la Transformacion                                   |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 4: Asignacion Innecesaria   | Tupla: temp = a                                                |
-|                                   | -> Eliminada porque 'temp' es sobrescrita en 'temp = b' sin... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 4: Asignacion Innecesaria   | Tupla: temp = b ; result = temp                                |
-|                                   | -> Simplificada a 'result = b' (elimina 'temp')                |
-+-----------------------------------+----------------------------------------------------------------+
+| 2.1. ASIGNACION DE DIRECCIONES DE MEMORIA AL CODIGO MAQUINA                                        |
++------------+------------+----------------------------+---------------------------------------------+
+| Direccion  | Codigo Hex | Instruccion Direccionada   | Comentario                                  |
++------------+------------+----------------------------+---------------------------------------------+
+| 0x1000:    | 0x0111000C | LOAD R1, 12                | # Carguen el valor de 12 en el registro R1  |
+| 0x1004:    | 0x02102000 | STORE 0x2000, R1           | # Almacenen el resultado en la variable a   |
+| 0x1008:    | 0x01110008 | LOAD R1, 8                 | # Carguen el valor de 8 en el registro R1   |
+| 0x100C:    | 0x02102004 | STORE 0x2004, R1           | # Almacenen el resultado en la variable b   |
+| 0x1010:    | 0x01110004 | LOAD R1, 4                 | # Carguen el valor de 4 en el registro R1   |
+| 0x1014:    | 0x02102008 | STORE 0x2008, R1           | # Almacenen el resultado en la variable c   |
+| 0x1018:    | 0x01102000 | LOAD R1, 0x2000            | # Carguen el valor de a en el registro R1   |
+| 0x101C:    | 0x10102004 | ADD R1, 0x2004             | # Sumen el valor de b al registro R1        |
+| 0x1020:    | 0x0210200C | STORE 0x200C, R1           | # Almacenen el resultado en la variable ... |
+| 0x1024:    | 0x12102008 | MUL R1, 0x2008             | # Multipliquen el valor en R1 por c         |
+| 0x1028:    | 0x02102010 | STORE 0x2010, R1           | # Almacenen el resultado en la variable ... |
+| 0x102C:    | 0x01102010 | LOAD R1, 0x2010            | # [L_CALCULO_FINAL] Carguen el valor de ... |
+| 0x1030:    | 0x1111000A | SUB R1, 10                 | # Resten el valor de 10 al registro R1      |
+| 0x1034:    | 0x02103000 | STORE 0x3000, R1           | # Almacenen el resultado en la variable ... |
++------------+------------+----------------------------+---------------------------------------------+
 
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | result = b                   | Asigna directamente b a result (opt... |
-+------+------------------------------+----------------------------------------+
-  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 3 | Instrucciones optimizadas: 1 | Reduccion: 2 tupla(s) (66.7%)
++--------------------------------------------------------------+
+| 2.2. TABLA DE SIMBOLOS DE DIRECCIONES DE MEMORIA             |
++------------------+-------------+------------+----------------+
+| Simbolo          | Direccion   | Segmento   | Categoria      |
++------------------+-------------+------------+----------------+
+| a                | 0x2000      | .data      | Variable       |
+| b                | 0x2004      | .data      | Variable       |
+| c                | 0x2008      | .data      | Variable       |
+| suma             | 0x200C      | .data      | Variable       |
+| producto         | 0x2010      | .data      | Variable       |
+| result           | 0x3000      | .result    | Resultado      |
+| L_CALCULO_FINAL  | 0x102C      | .text      | Etiqueta       |
++------------------+-------------+------------+----------------+
+
++----------------------------------------------------------------------------------------------------+
+| 3.1. CREACION DE ARCHIVO EJECUTABLE Y 3.2. CONFIGURACION DEL ENTORNO DE EJECUCION                  |
++----------------------------------------------------------------------------------------------------+
+| [CABECERA DEL EJECUTABLE]                                                                          |
+|   Archivo Generado : ejecutable_integral_p5.rpe                                                    |
+|   Magic Number     : 7F 52 50 45 (RPE - RigoPapu Executable)                                       |
+|   Arquitectura     : RigoPapu-32 RISC Processor (32-bit)                                           |
+|   Mapa de Memoria  : Entry Point: 0x1000 | .text: 0x1000 (56 B) | .data: 0x2000 (24 B) | .result: 0x3000 |
+| [CONFIGURACION DEL ENTORNO DE EJECUCION]                                                           |
+|   Permisos .text   : r-x (Lectura y Ejecucion)                                                     |
+|   Permisos .data   : rw- (Lectura y Escritura)                                                     |
+|   Libreria Cargada : librigocore_runtime.rlib (Gestion de registros y ALU de 32 bits)              |
+|   Libreria Cargada : libmem_Win32.rlib        (Asignacion de segmentos 0x1000, 0x2000, 0x3000)     |
+|   Libreria Cargada : libio_console.rlib       (Entrada/Salida estandar del sistema objetivo)       |
++----------------------------------------------------------------------------------------------------+
+
++----------------------------------------------------------------------------------------------------+
+| 3.3. TRAZA DE EJECUCION EN EL PROCESADOR OBJETIVO (CICLO FETCH - DECODE - EXECUTE)                 |
++-------+----------+----------------------------+-------------+--------------------------------------+
+| Ciclo | PC       | Instruccion Ejecutada      | Registro R1 | Efecto en Registros / Memoria RAM    |
++-------+----------+----------------------------+-------------+--------------------------------------+
+|    1  | 0x1000   | LOAD R1, 12                |          12 | R1 <- 12 (12)                        |
+|    2  | 0x1004   | STORE 0x2000, R1           |          12 | [0x2000 (a)] <- 12                   |
+|    3  | 0x1008   | LOAD R1, 8                 |           8 | R1 <- 8 (8)                          |
+|    4  | 0x100C   | STORE 0x2004, R1           |           8 | [0x2004 (b)] <- 8                    |
+|    5  | 0x1010   | LOAD R1, 4                 |           4 | R1 <- 4 (4)                          |
+|    6  | 0x1014   | STORE 0x2008, R1           |           4 | [0x2008 (c)] <- 4                    |
+|    7  | 0x1018   | LOAD R1, 0x2000            |          12 | R1 <- 12 (a)                         |
+|    8  | 0x101C   | ADD R1, 0x2004             |          20 | R1 <- R1 + 8 = 20                    |
+|    9  | 0x1020   | STORE 0x200C, R1           |          20 | [0x200C (suma)] <- 20                |
+|   10  | 0x1024   | MUL R1, 0x2008             |          80 | R1 <- R1 * 4 = 80                    |
+|   11  | 0x1028   | STORE 0x2010, R1           |          80 | [0x2010 (producto)] <- 80            |
+|   12  | 0x102C   | LOAD R1, 0x2010            |          80 | R1 <- 80 (producto)                  |
+|   13  | 0x1030   | SUB R1, 10                 |          70 | R1 <- R1 - 10 = 70                   |
+|   14  | 0x1034   | STORE 0x3000, R1           |          70 | [0x3000 (result)] <- 70              |
++-------+----------+----------------------------+-------------+--------------------------------------+
+  [ESTADO FINAL DE MEMORIA TRAS LA EJECUCION]:
+    -> [0x2000] a            = 12 (Variable)
+    -> [0x2004] b            = 8 (Variable)
+    -> [0x2008] c            = 4 (Variable)
+    -> [0x200C] suma         = 20 (Variable)
+    -> [0x2010] producto     = 80 (Variable)
+    -> [0x3000] result       = 70 (Resultado)
 
 ================================================================================
-  PRUEBA 5: PIPELINE COMPLETO DEL COMPILADOR (LAS 4 REGLAS INTEGRADAS)
+  PRUEBA 6A (INVALIDA): ERRORES DE TRADUCCION ISA Y DIRECCIONAMIENTO DE MEMORIA
 ================================================================================
 
-[1] CODIGO FUENTE DE ENTRADA:
++----------------------------------------------------------------------------------------------------+
+| [!] ERRORES DETECTADOS EN LA GENERACION DE CODIGO MAQUINA (PRUEBA INVALIDA)                        |
++-------+--------------------------+-------------------------+---------------------------------------+
+| Tupla | Instruccion TAC          | Tipo de Error           | Diagnostico                           |
++-------+--------------------------+-------------------------+---------------------------------------+
+|    1  | t1 = a @ b               | Error de Traduccion ISA | Operador intermedio desconocido o ... |
+|    2  | t2 = t1 / 0              | Error de Traduccion ISA | Division por cero detectada al tra... |
+|    4  | 123invalido = t2         | Error de Traduccion ISA | Identificador de destino invalido ... |
+|    3  | goto L_NO_DECLARADA      | Error de Direccionamiento | La etiqueta destino 'L_NO_DECLARAD... |
++-------+--------------------------+-------------------------+---------------------------------------+
+  [!] Detalle Tupla #1 ('t1 = a @ b'): Operador intermedio desconocido o no soportado por la ALU: '@'.
+  [!] Detalle Tupla #2 ('t2 = t1 / 0'): Division por cero detectada al traducir a instruccion DIV del procesador.
+  [!] Detalle Tupla #4 ('123invalido = t2'): Identificador de destino invalido '123invalido' en asignacion.
+  [!] Detalle Tupla #3 ('goto L_NO_DECLARADA'): La etiqueta destino 'L_NO_DECLARADA' no existe en el segmento de codigo.
+
+================================================================================
+  PRUEBA 6B (INVALIDA): CODIGO FUENTE CON ERRORES QUE IMPIDEN GENERAR EJECUTABLE
+================================================================================
+
+[FASE 1] CODIGO FUENTE DE ENTRADA:
 --------------------------------------------------------------------------------
 
         int a = 10;
-        int b = 20;
-
-        // Regla 2: Variable asignada pero nunca utilizada
-        int basura = 999;
-
-        // Regla 3: Calculos repetidos (a + b dos veces sin cambiar a ni b)
-        int suma1 = a + b;
-        int suma2 = a + b;
-
-        // Regla 1: Salto incondicional con instrucciones muertas antes de L_SALIDA
-        goto L_SALIDA;
-        a = 500;
-        b = 600;
-        L_SALIDA:
-
-        // Regla 4: Asignaciones innecesarias (sobrescritura inmediata y copia)
-        int temp = a;
-        temp = suma1;
-        int result = temp;
+        int b = "texto_incompatible";
+        int c = a / 0;
+        result = noDeclarada + 5;
     
 --------------------------------------------------------------------------------
 
-[2] FASE LEXICA:
-  [+] Analisis lexico completado sin errores (56 tokens generados).
+[FASE 2] ANALISIS LEXICO:
+  [+] Analisis lexico completado sin errores (23 tokens generados).
 
-[3] FASE SINTACTICA Y SEMANTICA:
-  [+] Validacion sintactica y semantica exitosa (0 errores).
-
-[4] GENERACION Y OPTIMIZACION DE CODIGO INTERMEDIO (3 DIRECCIONES):
-
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO ORIGINAL (ANTES DE OPTIMIZAR)                              |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | a = 10                       | Asigna el valor 10 a a                 |
-|   2  | b = 20                       | Asigna el valor 20 a b                 |
-|   3  | basura = 999                 | Asigna el valor 999 a basura           |
-|   4  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
-|   5  | suma1 = t1                   | Asigna el valor t1 a suma1             |
-|   6  | t2 = a + b                   | t2 es una etiqueta temporal para la... |
-|   7  | suma2 = t2                   | Asigna el valor t2 a suma2             |
-|   8  | goto L_SALIDA                | Salto incondicional a la etiqueta L... |
-|   9  | a = 500                      | Asigna el valor de 500 a a             |
-|  10  | b = 600                      | Asigna el valor de 600 a b             |
-|  11  | L_SALIDA:                    | Declaracion de la etiqueta L_SALIDA    |
-|  12  | temp = a                     | Asigna el valor a a temp               |
-|  13  | temp = suma1                 | Asigna el valor de suma1 a temp        |
-|  14  | result = temp                | Asigna el valor temp a result          |
-+------+------------------------------+----------------------------------------+
-
-+----------------------------------------------------------------------------------------------------+
-| BITACORA DE REGLAS DE OPTIMIZACION APLICADAS                                                       |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla Aplicada                    | Detalle de la Transformacion                                   |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 1: Codigo Muerto (Saltos)   | Tupla: a = 500                                                 |
-|                                   | -> Eliminada tras 'goto L_SALIDA' (inaccesible antes de 'L_... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 1: Codigo Muerto (Saltos)   | Tupla: b = 600                                                 |
-|                                   | -> Eliminada tras 'goto L_SALIDA' (inaccesible antes de 'L_... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 3: Calculo Repetido         | Tupla: t2 = a + b                                              |
-|                                   | -> Reutiliza 't1' para 'a + b' y elimina 't2'                  |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 4: Asignacion Innecesaria   | Tupla: temp = a                                                |
-|                                   | -> Eliminada porque 'temp' es sobrescrita en 'temp = suma1'... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 4: Asignacion Innecesaria   | Tupla: temp = suma1 ; result = temp                            |
-|                                   | -> Simplificada a 'result = suma1' (elimina 'temp')            |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 2: Variable No Utilizada    | Tupla: basura = 999                                            |
-|                                   | -> Eliminada porque la variable 'basura' nunca es leida en ... |
-+-----------------------------------+----------------------------------------------------------------+
-| Regla 2: Variable No Utilizada    | Tupla: suma2 = t1                                              |
-|                                   | -> Eliminada porque la variable 'suma2' nunca es leida en c... |
-+-----------------------------------+----------------------------------------------------------------+
-
-+------------------------------------------------------------------------------+
-| CODIGO INTERMEDIO OPTIMIZADO (DESPUES DE OPTIMIZAR)                          |
-+------+------------------------------+----------------------------------------+
-| No.  | Instruccion TAC (Tupla)      | Descripcion / Comentario               |
-+------+------------------------------+----------------------------------------+
-|   1  | a = 10                       | Asigna el valor 10 a a                 |
-|   2  | b = 20                       | Asigna el valor 20 a b                 |
-|   3  | t1 = a + b                   | t1 es una etiqueta temporal para la... |
-|   4  | suma1 = t1                   | Asigna el valor t1 a suma1             |
-|   5  | goto L_SALIDA                | Salto incondicional a la etiqueta L... |
-|   6  | L_SALIDA:                    | Declaracion de la etiqueta L_SALIDA    |
-|   7  | result = suma1               | Asigna directamente suma1 a result ... |
-+------+------------------------------+----------------------------------------+
-  [METRICAS DE OPTIMIZACION]: Instrucciones originales: 14 | Instrucciones optimizadas: 7 | Reduccion: 7 tupla(s) (50.0%)
+[FASE 3] ANALISIS SINTACTICO Y SEMANTICO:
+  [!] [Semantico] Linea 3, Col 13: Tipo de dato incompatible en la asignacion a 'b' (esperado: int, recibido: string).
+  [!] [Semantico] Linea 4, Col 19: Division por cero detectada.
+  [!] [Semantico] Linea 5, Col 9: Identificador 'result' no declarado.
+  [!] [Semantico] Linea 5, Col 18: Identificador 'noDeclarada' no declarado.
+  [!] [Semantico] Linea 5, Col 30: No se puede aplicar el operador aritmetico '+' a tipos incompatibles.
+  [!] [Semantico] Linea 5, Col 9: Identificador 'result' no declarado.
+  [X] Generacion de codigo maquina abortada por errores sintacticos/semanticos.
 Anguiano Garcia Angel Yahir Guadalupe, Figueroa Robles Axel Israel, Molina Alvarado Alvaro Moises, Torres Martinez Miguel Angel

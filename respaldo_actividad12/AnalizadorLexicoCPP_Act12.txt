@@ -1,0 +1,73 @@
+// Nombres de integrantes:
+// 1. Anguiano Garcia Angel Yahir Guadalupe
+// 2. Figueroa Robles Axel Israel
+// 3. Molina Alvarado Alvaro Moises
+// 4. Torres Martinez Miguel Angel
+
+// RESPALDO DE ACTIVIDAD 12 - OPTIMIZACION DE CODIGO INTERMEDIO
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iomanip>
+#include "AnalizadorLexico.h"
+#include "AnalizadorSintactico.h"
+#include "GeneradorCodigoIntermedio.hpp"
+#include "OptimizadorCodigo.hpp"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+using namespace std;
+
+void probarReglaTAC(const string& titulo, const vector<InstruccionTAC>& tuplasEntrada) {
+    cout << "\n================================================================================" << endl;
+    cout << "  " << titulo << endl;
+    cout << "================================================================================" << endl;
+
+    OptimizadorCodigo optimizador;
+    optimizador.optimizar(tuplasEntrada);
+    optimizador.imprimirComparativa();
+}
+
+void probarFlujoCompletoCompilador(const string& titulo, const string& codigoFuente) {
+    cout << "\n================================================================================" << endl;
+    cout << "  " << titulo << endl;
+    cout << "================================================================================" << endl;
+
+    cout << "\n[1] CODIGO FUENTE DE ENTRADA:" << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
+    cout << codigoFuente << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
+
+    AnalizadorLexico lexico;
+    vector<Token> tokens = lexico.analizar(codigoFuente);
+
+    cout << "\n[2] FASE LEXICA:" << endl;
+    if (lexico.tieneErrores()) {
+        for (const auto& err : lexico.obtenerErrores()) {
+            cout << "  [!] Error Lexico (Linea " << err.linea << ", Col " << err.columna
+                 << "): " << err.mensaje << " ('" << err.valor << "')" << endl;
+        }
+        return;
+    }
+    cout << "  [+] Analisis lexico completado sin errores (" << tokens.size() << " tokens generados)." << endl;
+
+    AnalizadorSintactico sintactico;
+    sintactico.analizar(tokens);
+
+    cout << "\n[3] FASE SINTACTICA Y SEMANTICA:" << endl;
+    if (sintactico.tieneErrores()) {
+        for (const auto& err : sintactico.obtenerErrores()) {
+            cout << "  [!] [" << err.tipo << "] Linea " << err.linea
+                 << ", Col " << err.columna << ": " << err.mensaje << endl;
+        }
+        return;
+    }
+    cout << "  [+] Validacion sintactica y semantica exitosa (0 errores)." << endl;
+
+    cout << "\n[4] GENERACION Y OPTIMIZACION DE CODIGO INTERMEDIO (3 DIRECCIONES):" << endl;
+    const vector<InstruccionTAC>& tacOriginal = sintactico.obtenerGenerador().obtenerInstrucciones();
+
+    OptimizadorCodigo optimizador;
+    optimizador.optimizar(tacOriginal);
+    optimizador.imprimirComparativa();
+}
