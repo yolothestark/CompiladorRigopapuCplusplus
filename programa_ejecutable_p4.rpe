@@ -1,0 +1,24 @@
+================================================================================
+  ARCHIVO EJECUTABLE GENERADO - COMPILADOR RIGOPAPU C++
+================================================================================
+[CABECERA DEL EJECUTABLE (HEADER)]
+  Magic Number    : 7F 52 50 45 (RPE - RigoPapu Executable)
+  Arquitectura    : RigoPapu-32 RISC Processor (32-bit)
+  Entry Point (PC): 0x1000
+  Segmento .text  : 0x1000 (16 bytes) [r-x (Lectura y Ejecucion)]
+  Segmento .data  : 0x2000 (16 bytes) [rw- (Lectura y Escritura)]
+  Segmento .result: 0x3000 [rw- (Lectura y Escritura)]
+
+[TABLA DE SIMBOLOS Y DIRECCIONES]
+  a              -> 0x2000 (.data, Variable)
+  b              -> 0x2004 (.data, Variable)
+  c              -> 0x2008 (.data, Variable)
+  result         -> 0x3000 (.result, Resultado)
+  L1             -> 0x1000 (.text, Etiqueta)
+  L2             -> 0x1008 (.text, Etiqueta)
+
+[SEGMENTO DE CODIGO MAQUINA (.text)]
+  0x1000 | 0x01102000 | LOAD R1, 0x2000          # Carguen el valor de a en el registro R1
+  0x1004 | 0x10102004 | ADD R1, 0x2004           # Sumen el valor de b al registro R1
+  0x1008 | 0x12102008 | MUL R1, 0x2008           # Multipliquen el valor en R1 por c
+  0x100C | 0x02103000 | STORE 0x3000, R1         # Almacenen el resultado en la variable result
